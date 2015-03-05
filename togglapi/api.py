@@ -17,7 +17,7 @@ class TogglAPI(object):
 
     def _make_url(self, section='time_entries', params={}):
         """Constructs and returns an api url to call with the section of the API to be called
-        and parameters defined by key/pair values in the paramas dict.
+        and parameters defined by key/pair values in the params dict.
         Default section is "time_entries" which evaluates to "time_entries.json"
 
         >>> t = TogglAPI('_SECRET_TOGGLE_API_TOKEN_')
@@ -62,9 +62,19 @@ class TogglAPI(object):
         if time_entries is None:
             return 0
 
+        for entry in time_entries:
+            print entry
+
         total_seconds_tracked = sum(max(entry['duration'], 0) for entry in time_entries)
 
         return (total_seconds_tracked / 60.0) / 60.0
+
+    def get_time_entries_sum_per_day(self, start_date='', end_date='', timezone=''):
+        """Count the total tracked hours excluding any RUNNING real time tracked time entries"""
+        time_entries = self.get_time_entries(start_date=start_date.isoformat(), end_date=end_date.isoformat())
+
+        if time_entries is None:
+            return 0
 
 
 if __name__ == '__main__':

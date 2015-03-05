@@ -1,10 +1,9 @@
-Toggl Target
-============
+Toggl Timesheet
+===============
 
-At work, we track our working hours on Toggl (www.toggl.com), so I created this small project to calculate how many hours I should work to achieve my monthly goals.
+I use Toggl (www.toggl.com) to track time for my consulting work and some clients need just a simple timesheet, so I adapted this small little project from [toggl_target](https://github.com/mos3abof/toggl_target) to fit my needs.
 
-You will need to install `requests` and `dateutil` python libraries to be able to use this.
-
+At work I need some simple timesheets for some clients, so I adapted this small little project from [toggl_target](https://github.com/mos3abof/toggl_target) 
 
 Installation on linux
 ---------------------
