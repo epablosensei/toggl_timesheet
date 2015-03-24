@@ -7,6 +7,7 @@ import os
 import sys
 import config
 import requests
+import dataset
 
 from togglapi import api
 from toggltarget import target
@@ -57,54 +58,54 @@ def main():
     try:
         # time_entries = a.get_tracked_entries(start_date=w.month_start, end_date=w.month_end)
         time_entries = r.get_detailed_report(since=w.month_start, until=w.month_end)
+        print "r.get_detailed_report"
     except:
         print "OMG! Toggle request failed for some mysterious reason!"
         print "Good Bye Cruel World!"
+        sys.exc_info()[0]
         sys.exit()
 
     print len(time_entries)
+
+    # connecting to a SQLite database
+    db_name = w.month_start.strftime("%Y-%m") + ".db"
+    db = dataset.connect("sqlite:///"+db_name)
+
+    # get a reference to the table
+    table = db['timesheet']
+
+    # Insert the entries in the DB
+    for entry in time_entries:
+        # Convert the tag list into csv string
+        entry['tags'] = ', '.join(entry['tags'])
+        print entry
+        table.insert(entry)
+
     # for entry in time_entries:
     #     print entry
     #     tt = toggltime.Toggletime(entry)
     #     tt.roundup()
     #     toggltime_list.append(tt)
+
+
+    # # Insert a new record.
+    # table.insert(dict(name='John Doe', age=46, country='China'))
+    #
+    # # dataset will create "missing" columns any time you insert a dict with an unknown key
+    # table.insert(dict(name='Jane Doe', age=37, country='France', gender='female'))
+    # result = db.query('SELECT country, COUNT(*) c FROM user GROUP BY country')
+    # for row in result:
+    #     print(row['country'], row['c'])
+
+
+
+
     #
     # print_csv(toggltime_list)
         # start = rounddown_start_time(entry['start'])
         # stop = roundup_finish_time(entry['stop'])
         # print "start: " +start + " -- " + entry['start']
         # print "start: " +stop + " -- " + entry['stop']
-
-
-
-
-
-
-    sys.exit()
-
-    t.required_hours = w.required_hours_this_month
-    t.tolerance = config.TOLERANCE_PERCENTAGE
-
-    print "So far you have tracked",
-    print "Total days left till deadline : {}".format(w.days_left_count)
-    print "\nThis month targets [Required (minimum)] : {} ({})".format(w.required_hours_this_month,
-                                                                       w.required_hours_this_month - (
-                                                                       w.required_hours_this_month * config.TOLERANCE_PERCENTAGE))
-    print "\nTo achieve the minimum:\n\tyou should log {0:.2f} hours every business day".format(normal_min_hours)
-    print "\tor log {0:.2f} hours every day".format(crunch_min_hours)
-    print "\tleft is : {0:.2f}".format(
-        (w.required_hours_this_month - (w.required_hours_this_month * config.TOLERANCE_PERCENTAGE)) - t.achieved_hours)
-
-    normal_required_hours, crunch_required_hours = t.get_required_daily_hours(w.business_days_left_count,
-                                                                              w.days_left_count)
-
-    print "\nTo achieve the required :\n\tyou should log {0:.2f} hours every business day".format(normal_required_hours)
-    print "\tor log {0:.2f} hours every day".format(crunch_required_hours)
-    print "\tleft is : {0:.2f}".format(w.required_hours_this_month - t.achieved_hours)
-    print "\nHow your progress looks:"
-    bar = percentile_bar(t.achieved_percentage, config.TOLERANCE_PERCENTAGE)
-    print bar
-
 
 if __name__ == '__main__':
     main()
