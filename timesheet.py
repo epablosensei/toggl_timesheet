@@ -10,7 +10,6 @@ import requests
 import dataset
 
 from togglapi import api
-from toggltarget import target
 from workingtime import workingtime
 from toggltime import toggltime
 from datetime import datetime
@@ -69,6 +68,19 @@ def main():
 
     # connecting to a SQLite database
     db_name = w.month_start.strftime("%Y-%m") + ".db"
+    db_name_old = db_name + ".old"
+
+    # Check if the db already exists
+
+    ## delete only if file exists ##
+    if os.path.exists(db_name):
+        os.rename(db_name, db_name_old)
+    elif os.path.exists(db_name) and os.path.exists(db_name_old):
+        print("Deleting %s and renaming %s as %s." % (db_name_old, db_name, db_name_old))
+        os.rename(db_name, db_name_old)
+    else:
+        print("Sorry, I can not remove %s file." % db_name)
+
     db = dataset.connect("sqlite:///"+db_name)
 
     # get a reference to the table
@@ -78,7 +90,6 @@ def main():
     for entry in time_entries:
         # Convert the tag list into csv string
         entry['tags'] = ', '.join(entry['tags'])
-        print entry
         table.insert(entry)
 
     # for entry in time_entries:

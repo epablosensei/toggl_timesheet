@@ -148,7 +148,7 @@ class ReportAPI(object):
         if total_count % per_page != 0:
             last_page = (total_count // per_page) + 1
 
-        print "last_page:" + str(last_page)
+        # print "last_page:" + str(last_page)
 
         if last_page > 1:
             # Get all pages

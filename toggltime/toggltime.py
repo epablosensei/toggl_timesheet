@@ -3,15 +3,18 @@
 #@author Pablo Endres <epablo+code@pabloendres.com>
 
 
-from datetime import datetime
+from __future__ import division
+from datetime import timedelta
 import dateutil.parser
 from dateutil.relativedelta import relativedelta
 
 class Toggletime(object):
-    """ Model Toggle JSON time entries """
+    """ Model Toggle time related items JSON time entries
+        This should work with both items from the TogglAPI and the ReportAPI
+    """
 
 
-    def __init__(self, time_entry, roundup = 0):
+    def __init__(self, time_entry, roundup = 0, align_time = 0):
         """
         :param time_entry:
         :param roundup:
@@ -21,39 +24,42 @@ class Toggletime(object):
         """
         self.time_entry = time_entry
         self.ROUNDUP = roundup
+        self.ALIGN_TIME = align_time
 
-        # print time_entry
+        # TimeAPI
+        if 'project_hex_color' not in time_entry:
+            self.duration = time_entry['duration']
+            self.duration_dec = self.sec_to_hours_dec(self.duration)
+            self.start = dateutil.parser.parse(time_entry['start'])
+            self.stop = dateutil.parser.parse(time_entry['stop'])
+            self.type = 'TimeAPI'
+        else:
+            # ReportAPI
+            self.duration = timedelta(microseconds=time_entry['dur']).total_seconds()
 
-        # {u'duronly': False, u'wid': 507341, u'description': u'Test entry', u'stop': u'2015-03-18T16:45:00+00:00',
-        # u'duration': 4500, u'pid': 5503294, u'start': u'2015-03-18T15:30:00+00:00', u'at': u'2015-03-18T16:48:04+00:00',
-        # u'billable': False, u'tid': 3399821, u'id': 210886825, u'uid': 676618}
+            self.duration_dec = self.sec_to_hours_dec(self.duration)
+            self.start = dateutil.parser.parse(time_entry['start'])
+            self.stop = dateutil.parser.parse(time_entry['end'])
+            self.type = 'ReportAPI'
 
+            # Normalize the keys
+            del self.time_entry['dur']
+            self.time_entry['duration'] = self.duration
+            del self.time_entry['end']
+            self.time_entry['stop'] = self.stop
 
-        self.description = time_entry['description']
-        # self.duration = time_entry['duration']
-        self.duration = relativedelta(seconds=time_entry['duration'])
-        self.duration_dec = self.sec_to_hours_dec(self.duration)
-        self.start = dateutil.parser.parse(time_entry['start'])
-        self.stop = dateutil.parser.parse(time_entry['stop'])
-        self.billable = time_entry['billable']
-        self.wid = time_entry['wid']
-        self.pid = time_entry['pid']
-        # self.tid = time_entry['tid']
-        self.id = time_entry['id']
 
     @property
-    def rounddown_start(self):
+    def align_start(self):
         """
-        Round down the startup time so that it is aligned with the global roundup parameter:
-            self.ROUNDUP = 15  -> :00 :15 :30 :45
-            self.ROUNDUP = 30  -> :00 :30
-            self.ROUNDUP = 1  -> :00
-            self.ROUNDUP = 0  -> do nothing
-        :param
-        :return: date iso format
+        Align the startup time
+            self.ALIGN_TIME = 15  -> :00 :15 :30 :45
+            self.ALIGN_TIME = 30  -> :00 :30
+            self.ALIGN_TIME = 1  -> :00
+            self.ALIGN_TIME = 0  -> do nothing
         """
 
-        if self.ROUNDUP == 15:
+        if self.ALIGN_TIME == 15:
             if 0 <= self.start.minute <= 10:
                 self.start = self.start.replace(minute=0, second=0)
             elif 10 < self.start.minute <= 20:
@@ -64,33 +70,30 @@ class Toggletime(object):
                 self.start = self.start.replace(minute=45, second=0)
             else:
                 self.start = self.start.replace(hour=self.start.hour+1, minute=0, second=0)
-        elif self.ROUNDUP == 30:
+        elif self.ALIGN_TIME == 30:
             if 0 <= self.start.minute <= 15:
                 self.start = self.start.replace(minute=0, second=0)
             elif 15 < self.start.minute <= 40:
                 self.start = self.start.replace(minute=30, second=0)
             elif 40 < self.start.minute <= 59:
                 self.start = self.start.replace(hour=self.start.hour+1, minute=0, second=0)
-        elif self.ROUNDUP == 1:
+        elif self.ALIGN_TIME == 1:
             if 0 <= self.start.minute < 6:
                self.start = self.start.replace(minute=0, second=0)
             elif 6 <= self.start.minute <= 59:
                 self.start = self.start.replace(hour=self.start.hour+1, minute=0, second=0)
-        #Todo recalculate duration
 
     @property
-    def roundup_stop(self):
+    def align_stop(self):
         """
-        Round up the finish time so that it is aligned with the global roundup parameter:
-            self.ROUNDUP = 15  -> :00 :15 :30 :45
-            self.ROUNDUP = 30  -> :00 :30
-            self.ROUNDUP = 1  -> :00
-            self.ROUNDUP = 0  -> do nothing
-        :param time_entry: date iso format
-        :return: date iso format
+        Align the finish time
+            self.ALIGN_TIME = 15  -> :00 :15 :30 :45
+            self.ALIGN_TIME = 30  -> :00 :30
+            self.ALIGN_TIME = 1  -> :00
+            self.ALIGN_TIME = 0  -> do nothing
         """
 
-        if self.ROUNDUP == 15:
+        if self.ALIGN_TIME == 15:
             if 0 < self.stop.minute <= 15:
                 self.stop = self.stop.replace(minute=15, second=0)
             elif 15 < self.stop.minute <= 30:
@@ -99,12 +102,12 @@ class Toggletime(object):
                 self.stop = self.stop.replace(minute=45, second=0)
             elif 45 < self.stop.minute <= 59:
                 self.stop = self.stop.replace(hour=self.stop.hour+1, minute=0, second=0)
-        elif self.ROUNDUP == 30:
+        elif self.ALIGN_TIME == 30:
             if 0 < self.stop.minute <= 30:
                 self.stop = self.stop.replace(minute=30, second=0)
             elif 30 < self.stop.minute <= 59:
                 self.stop = self.stop.replace(hour=self.stop.hour+1, minute=0, second=0)
-        elif self.ROUNDUP == 1:
+        elif self.ALIGN_TIME == 1:
             if 0 <= self.stop.minute <= 5:
                 self.stop = self.stop.replace(minute=0, second=0)
             elif 5 < self.stop.minute <= 59:
@@ -120,36 +123,72 @@ class Toggletime(object):
         self.duration = self.duration.total_seconds()
         self.duration_dec = self.sec_to_hours_dec(self.duration)
 
-    def roundup(self):
+    @property
+    def align_start_end(self):
         """
 
         :return:
         """
-        self.rounddown_start
-        self.roundup_stop
+        self.align_start
+        self.align_stop
         self.calculate_duration
 
 
-    def sec_to_hours_dec(self,time_sec):
+    def sec_to_hours_dec(self, time_sec):
         """
         :return: time in hours
         """
         return time_sec/60/60
 
+    def update_time_entry(self):
+        """
+        Update the dictionary
+        :return:
+        """
+        self.time_entry['duration'] = self.duration
+        self.time_entry['duration_dec'] = self.duration_dec
+        self.time_entry['start'] = self.start.isoformat()
+        self.time_entry['stop'] = self.stop.isoformat()
+
+    def get_time_entry(self):
+        return self.time_entry
 
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
 
+    print "TogglAPI - test"
     tt = Toggletime({u'duronly': False, u'wid': 507341, u'description': u'Test entry', \
                      u'stop': u'2015-03-18T16:55:00+00:00', u'duration': 4500, u'pid': 5503294, \
                      u'start': u'2015-03-18T15:35:00+00:00', u'at': u'2015-03-18T16:48:04+00:00', \
-                     u'billable': False, u'tid': 3399821, u'id': 210886825, u'uid': 676618}, 15)
-    print tt.start, tt.stop, tt.description, tt.duration, tt.ROUNDUP
-    tt.rounddown_start
-    tt.roundup_stop
+                     u'billable': False, u'tid': 3399821, u'id': 210886825, u'uid': 676699})
+    tt.ALIGN_TIME = 15
+    print tt.start, tt.stop, tt.duration, tt.ROUNDUP, tt.ALIGN_TIME
+    print tt.duration_dec, tt.stop - tt.start
+    tt.align_start
+    tt.align_start_end
     tt.calculate_duration
+    print tt.start, tt.stop, tt.duration, tt.duration_dec, tt.ALIGN_TIME
+    print tt.duration_dec, tt.stop - tt.start
+    tt.update_time_entry()
+    print tt.time_entry
 
-    print tt.start, tt.stop, tt.description, tt.duration, tt.ROUNDUP
-    print tt.sec_to_hours_dec(tt.duration), tt.stop - tt.start
+    print ""
+    print "ReportAPI - test"
+    tt = Toggletime({u'updated': u'2015-03-02T10:02:59+01:00', u'task': u'Other', u'end': u'2015-03-02T09:12:12+01:00', \
+                    u'description': u'Other', u'project_color': u'13', u'tags': '', u'is_billable': True, \
+                    u'pid': 5503294, u'cur': u'EUR', u'project': u'Proy1', u'start': u'2015-03-02T07:17:00+01:00', \
+                    u'client': u'Client1', u'user': u'Max', u'billable': 0.0, u'tid': 3399820, \
+                    u'project_hex_color': u'#bc2d07', u'dur': 7200000, u'use_stop': True, u'id': 205009936, u'uid': 676699})
+    tt.ALIGN_TIME = 15
+    print tt.start, tt.stop, tt.duration, tt.ROUNDUP, tt.ALIGN_TIME
+    print tt.duration_dec, tt.stop - tt.start
+    tt.align_start
+    tt.align_start_end
+    tt.calculate_duration
+    print tt.start, tt.stop, tt.duration, tt.duration_dec, tt.ALIGN_TIME
+    print tt.duration_dec, tt.stop - tt.start
+    tt.update_time_entry()
+    print tt.time_entry
+
 
