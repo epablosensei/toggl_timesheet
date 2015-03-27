@@ -137,6 +137,8 @@ class ReportAPI(object):
         url = self._make_url(section='details', params={'since': since, 'until': until,
                                                         'user_agent': 'epablo+toggletime@pabloendres.com',
                                                         'rounding': rounding, 'workspace_id': workspace_id})
+        # TODO: add useragent to the config
+
         r = self._query(url=url, method='GET')
         res = r.json()
 
@@ -147,8 +149,6 @@ class ReportAPI(object):
         # Calculate how many pages we have to get
         if total_count % per_page != 0:
             last_page = (total_count // per_page) + 1
-
-        print "last_page:" + str(last_page)
 
         if last_page > 1:
             # Get all pages

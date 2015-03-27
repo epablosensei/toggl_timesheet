@@ -7,9 +7,9 @@ import os
 import sys
 import config
 import requests
+import dataset
 
 from togglapi import api
-from toggltarget import target
 from workingtime import workingtime
 from toggltime import toggltime
 from datetime import datetime
@@ -26,84 +26,94 @@ def internet_on():
         return False
 
 
-def print_csv(toggltime_list):
+def print_csv(entry_list, start='', stop='', client='No client'):
     """
 
-    :param toggltime_list:
+    :param entry_list, client='Internal', start='', stop=''
     :return:
     """
+
+    if client == '':
+        client = 'No client'
+
+    print "Client: ", client
+    print ("Period: %s - %s" % (start, stop))
+    print ""
+
     # print the headers
-    print "date,start,stop,duration,duration_dec"
-    for tt in toggltime_list:
-        print("%s,%s,%s,%s,%s", tt.start.strftime("%Y-%m-%d"), tt.start.strftime("%H:%M"), tt.stop.strftime("%H:%M"),
-        tt.duration, tt.duration_dec)
+    print "date;start;stop;duration_dec"
+    for entry in entry_list:
+        print("%s;%s;%s;%s" % (entry['start'],  entry['start_time'],  entry['stop_time'],  entry['duration_dec']))
+
+    print ""
+    print ""
 
 def main():
     w = workingtime.WorkingTime(config.WORKING_HOURS_PER_DAY, config.BUSINESS_DAYS, config.WEEK_DAYS)
     # a = api.TogglAPI(config.API_TOKEN, config.TIMEZONE)
     r = api.ReportAPI(config.API_TOKEN, config.TIMEZONE, config.WORKSPACE_ID)
 
-    time_entries = []
-    toggltime_list = []
+    start = w.month_start
+    stop = w.month_end
 
     print "Hi"
     print "Checking Internet connectivity..."
     if not internet_on():
         print "OMG! There is no internet connection!"
-        print "Good Bye Cruel World!"
         sys.exit()
-    print "Internet seems fine!"
     print "\nTrying to connect to Toggl, hang on!\n"
     try:
-        # time_entries = a.get_tracked_entries(start_date=w.month_start, end_date=w.month_end)
-        time_entries = r.get_detailed_report(since=w.month_start, until=w.month_end)
+        time_entries = r.get_detailed_report(start, stop)
     except:
         print "OMG! Toggle request failed for some mysterious reason!"
-        print "Good Bye Cruel World!"
+        sys.exc_info()[0]
         sys.exit()
 
-    print len(time_entries)
-    # for entry in time_entries:
-    #     print entry
-    #     tt = toggltime.Toggletime(entry)
-    #     tt.roundup()
-    #     toggltime_list.append(tt)
+    # connecting to a SQLite database
+    db_name = "data/" + w.month_start.strftime("%Y-%m") + ".db"
+    db_name_old = db_name + ".old"
+
+    # Check if the db file already exists
+    if os.path.exists(db_name):
+        os.rename(db_name, db_name_old)
+    elif os.path.exists(db_name) and os.path.exists(db_name_old):
+        print("Deleting %s and renaming %s as %s." % (db_name_old, db_name, db_name_old))
+        os.rename(db_name, db_name_old)
+    else:
+        print("Sorry, I can not remove %s file." % db_name)
+
+    db = dataset.connect("sqlite:///"+db_name)
+
+    # get a reference to the table
+    table = db['timesheet']
+
+    # Insert the entries in the DB
+    for entry in time_entries:
+        tt = toggltime.Toggletime(entry, roundup=config.ROUNDUP, align_time=config.ALIGN_TIME)
+        tt.align_start_stop()
+        tt.roundup()
+        table.insert(tt.get_time_entry)
+
+    # Get the list of clients
+    clients = db.query('select distinct(client) from timesheet;')
+
+    for c in clients:
+        timeheet = db.query("select start, min(start_time) as start_time, max(stop_time) as stop_time, \
+        sum(duration_dec) as duration_dec from timesheet where client='" + c['client'] + "' group by start;")
+        print_csv(timeheet, start.date() ,stop.date(), c['client'])
+
+    # select start, min(start_time) ,max(stop_time), sum(duration), sum(duration_dec) from timesheet where client='Vodafone' group by start ;
+
+
+    # # Insert a new record.
+    # table.insert(dict(name='John Doe', age=46, country='China'))
     #
-    # print_csv(toggltime_list)
-        # start = rounddown_start_time(entry['start'])
-        # stop = roundup_finish_time(entry['stop'])
-        # print "start: " +start + " -- " + entry['start']
-        # print "start: " +stop + " -- " + entry['stop']
+    # # dataset will create "missing" columns any time you insert a dict with an unknown key
+    # table.insert(dict(name='Jane Doe', age=37, country='France', gender='female'))
+    # result = db.query('SELECT country, COUNT(*) c FROM user GROUP BY country')
+    # for row in result:
+    #     print(row['country'], row['c'])
 
-
-
-
-
-
-    sys.exit()
-
-    t.required_hours = w.required_hours_this_month
-    t.tolerance = config.TOLERANCE_PERCENTAGE
-
-    print "So far you have tracked",
-    print "Total days left till deadline : {}".format(w.days_left_count)
-    print "\nThis month targets [Required (minimum)] : {} ({})".format(w.required_hours_this_month,
-                                                                       w.required_hours_this_month - (
-                                                                       w.required_hours_this_month * config.TOLERANCE_PERCENTAGE))
-    print "\nTo achieve the minimum:\n\tyou should log {0:.2f} hours every business day".format(normal_min_hours)
-    print "\tor log {0:.2f} hours every day".format(crunch_min_hours)
-    print "\tleft is : {0:.2f}".format(
-        (w.required_hours_this_month - (w.required_hours_this_month * config.TOLERANCE_PERCENTAGE)) - t.achieved_hours)
-
-    normal_required_hours, crunch_required_hours = t.get_required_daily_hours(w.business_days_left_count,
-                                                                              w.days_left_count)
-
-    print "\nTo achieve the required :\n\tyou should log {0:.2f} hours every business day".format(normal_required_hours)
-    print "\tor log {0:.2f} hours every day".format(crunch_required_hours)
-    print "\tleft is : {0:.2f}".format(w.required_hours_this_month - t.achieved_hours)
-    print "\nHow your progress looks:"
-    bar = percentile_bar(t.achieved_percentage, config.TOLERANCE_PERCENTAGE)
-    print bar
 
 
 if __name__ == '__main__':
