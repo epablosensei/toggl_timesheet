@@ -26,53 +26,54 @@ def internet_on():
         return False
 
 
-def print_csv(toggltime_list):
+def print_csv(entry_list, start='', stop='', client='No client'):
     """
 
-    :param toggltime_list:
+    :param entry_list, client='Internal', start='', stop=''
     :return:
     """
+
+    if client == '':
+        client = 'No client'
+
+    print "Client: ", client
+    print ("Period: %s - %s" % (start, stop))
+    print ""
+
     # print the headers
-    print "date,start,stop,duration,duration_dec"
-    for tt in toggltime_list:
-        print("%s,%s,%s,%s,%s", tt.start.strftime("%Y-%m-%d"), tt.start.strftime("%H:%M"), tt.stop.strftime("%H:%M"),
-        tt.duration, tt.duration_dec)
+    print "date;start;stop;duration_dec"
+    for entry in entry_list:
+        print("%s;%s;%s;%s" % (entry['start'],  entry['start_time'],  entry['stop_time'],  entry['duration_dec']))
+
+    print ""
+    print ""
 
 def main():
     w = workingtime.WorkingTime(config.WORKING_HOURS_PER_DAY, config.BUSINESS_DAYS, config.WEEK_DAYS)
     # a = api.TogglAPI(config.API_TOKEN, config.TIMEZONE)
     r = api.ReportAPI(config.API_TOKEN, config.TIMEZONE, config.WORKSPACE_ID)
 
-    time_entries = []
-    toggltime_list = []
+    start = w.month_start
+    stop = w.month_end
 
     print "Hi"
     print "Checking Internet connectivity..."
     if not internet_on():
         print "OMG! There is no internet connection!"
-        print "Good Bye Cruel World!"
         sys.exit()
-    print "Internet seems fine!"
     print "\nTrying to connect to Toggl, hang on!\n"
     try:
-        # time_entries = a.get_tracked_entries(start_date=w.month_start, end_date=w.month_end)
-        time_entries = r.get_detailed_report(since=w.month_start, until=w.month_end)
-        print "r.get_detailed_report"
+        time_entries = r.get_detailed_report(start, stop)
     except:
         print "OMG! Toggle request failed for some mysterious reason!"
-        print "Good Bye Cruel World!"
         sys.exc_info()[0]
         sys.exit()
 
-    print len(time_entries)
-
     # connecting to a SQLite database
-    db_name = w.month_start.strftime("%Y-%m") + ".db"
+    db_name = "data/" + w.month_start.strftime("%Y-%m") + ".db"
     db_name_old = db_name + ".old"
 
-    # Check if the db already exists
-
-    ## delete only if file exists ##
+    # Check if the db file already exists
     if os.path.exists(db_name):
         os.rename(db_name, db_name_old)
     elif os.path.exists(db_name) and os.path.exists(db_name_old):
@@ -88,15 +89,20 @@ def main():
 
     # Insert the entries in the DB
     for entry in time_entries:
-        # Convert the tag list into csv string
-        entry['tags'] = ', '.join(entry['tags'])
-        table.insert(entry)
+        tt = toggltime.Toggletime(entry, roundup=config.ROUNDUP, align_time=config.ALIGN_TIME)
+        tt.align_start_stop()
+        tt.roundup()
+        table.insert(tt.get_time_entry)
 
-    # for entry in time_entries:
-    #     print entry
-    #     tt = toggltime.Toggletime(entry)
-    #     tt.roundup()
-    #     toggltime_list.append(tt)
+    # Get the list of clients
+    clients = db.query('select distinct(client) from timesheet;')
+
+    for c in clients:
+        timeheet = db.query("select start, min(start_time) as start_time, max(stop_time) as stop_time, \
+        sum(duration_dec) as duration_dec from timesheet where client='" + c['client'] + "' group by start;")
+        print_csv(timeheet, start.date() ,stop.date(), c['client'])
+
+    # select start, min(start_time) ,max(stop_time), sum(duration), sum(duration_dec) from timesheet where client='Vodafone' group by start ;
 
 
     # # Insert a new record.
@@ -109,14 +115,6 @@ def main():
     #     print(row['country'], row['c'])
 
 
-
-
-    #
-    # print_csv(toggltime_list)
-        # start = rounddown_start_time(entry['start'])
-        # stop = roundup_finish_time(entry['stop'])
-        # print "start: " +start + " -- " + entry['start']
-        # print "start: " +stop + " -- " + entry['stop']
 
 if __name__ == '__main__':
     main()
