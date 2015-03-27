@@ -8,6 +8,7 @@ import sys
 import config
 import requests
 import dataset
+import csv
 
 from togglapi import api
 from workingtime import workingtime
@@ -26,31 +27,34 @@ def internet_on():
         return False
 
 
-def print_csv(entry_list, start='', stop='', client='No client'):
+def print_csv(entry_list, start='', stop='', client='No_client'):
     """
 
-    :param entry_list, client='Internal', start='', stop=''
+    :param entry_list, start='', stop='', client='No client',
     :return:
     """
 
     if client == '':
-        client = 'No client'
+        client = 'No_client'
 
-    print "Client: ", client
-    print ("Period: %s - %s" % (start, stop))
-    print ""
+    filename = config.DATA_DIR + "/" + client + ".csv"
+    with open(filename, 'w') as f:
+        try:
+            print "writing " + filename
+            writer = csv.writer(f, delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
+            writer.writerow(("Client: ", client))
+            writer.writerow(("Period: ", "%s - %s" % (start, stop)))
+            writer.writerow((""))
 
-    # print the headers
-    print "date;start;stop;duration_dec"
-    for entry in entry_list:
-        print("%s;%s;%s;%s" % (entry['start'],  entry['start_time'],  entry['stop_time'],  entry['duration_dec']))
+            writer.writerow(("date", "start", "stop", "duration_dec"))
+            for entry in entry_list:
+                writer.writerow((entry['start'],  entry['start_time'],  entry['stop_time'],  entry['duration_dec']))
+        finally:
+            f.close()
 
-    print ""
-    print ""
 
 def main():
     w = workingtime.WorkingTime(config.WORKING_HOURS_PER_DAY, config.BUSINESS_DAYS, config.WEEK_DAYS)
-    # a = api.TogglAPI(config.API_TOKEN, config.TIMEZONE)
     r = api.ReportAPI(config.API_TOKEN, config.TIMEZONE, config.WORKSPACE_ID)
 
     start = w.month_start
@@ -70,7 +74,7 @@ def main():
         sys.exit()
 
     # connecting to a SQLite database
-    db_name = "data/" + w.month_start.strftime("%Y-%m") + ".db"
+    db_name = config.DATA_DIR + "/" + w.month_start.strftime("%Y-%m") + ".db"
     db_name_old = db_name + ".old"
 
     # Check if the db file already exists
