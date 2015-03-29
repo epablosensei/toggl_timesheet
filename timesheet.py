@@ -9,12 +9,17 @@ import config
 import requests
 import dataset
 import csv
+import getopt
 
 from togglapi import api
 from workingtime import workingtime
 from toggltime import toggltime
 from datetime import datetime
 
+
+version = "1"
+url = "http://www.pabloendres.com/tools#timesheet"
+verbose = False
 
 def internet_on():
     """Checks if internet connection is on by connecting to Google"""
@@ -52,8 +57,75 @@ def print_csv(entry_list, start='', stop='', client='No_client'):
         finally:
             f.close()
 
+def usage(error_msg=''):
+    """ Show usage options """
+
+    global version
+    global url
+
+    print error_msg
+    print ""
+    print "timeheet v-" + version + "\t"+ url
+    print "usage:  timeheet.py [OPTION...] \n"
+    print "     -h, --help                          display this help"
+    print "     -t [token], --api-token=token       Toggl API token"
+    print "     -d dirname, --data-dir=dirname      directory where to store results and local database"
+    print "     -r value,   --roundup=value         round up precision"
+    print "     -a,         --align-time=value      Align the start - end time of each entry"
+    print "     -z,         --time-zone=tz          Timezone to use. Format \"+HH:MM\""
+    print "     -w,         --workspace-id=id       Toogl Worskpace ID"
+    print "     -s,         --start=YYYY-MM-DD      Start of the report - default: last month"
+    print "     -e,         --end=YYYY-MM-DD        End of the report - default: end of last month"
+    print ""
+    print ""
+    print "ROUNDUP = 15  -> :00 :15 :30 :45; ROUNDUP = 30  -> :00 :30; ROUNDUP= 1  -> :00, 0 -> don't round up"
+    print "ALIGN = 15  -> :00 :15 :30 :45; ALIGN = 30  -> :00 :30; ALIGN= 1  -> :00, 0 -> don't round up"
+    print ""
+    exit()
 
 def main():
+
+    # 'API_TOKEN': '38bf888afc4203fb443a5503b1f36252',
+    # 'DATA_DIR': 'data',
+    # 'ROUNDUP': 15,
+    # ALIGN_TIME': 15
+    # 'TIMEZONE': '+02:00',
+    # 'WORKSPACE_ID': '507341',
+
+    start = False
+    end = False
+
+    try:
+        opts, args = getopt.gnu_getopt(
+                sys.argv[1:], "hd:r:a:t:z:w:s:e:", ["help", "api-token=", "data-dir=", "roundup=", "align-time=", "time-zone=", \
+                                                  "workspace-id=", "start=", "end="])
+    except getopt.GetoptError, e:
+        usage(e.msg)
+
+    for o, arg in opts:
+        if o == "-h" or o == "--help":
+            usage()
+            sys.exit(0)
+        elif o == "-t" or o == "--api-token":
+            config.API_TOKEN = arg
+        elif o == "-d" or o == "--data-dir":
+            config.DATA_DIR = arg
+        elif o == "-r" or o == "--roundup":
+            config.ROUNDUP = arg
+        elif o == "-a" or o == "--align-time":
+            config.ALIGN_TIME = arg
+        elif o == "-z" or o == "--time-zone":
+            config.TIMEZONE = arg
+        elif o == "-w" or o == "--workspace-id":
+            config.WORKSPACE_ID = arg
+        elif o == "-s" or o == "--start":
+            start = arg
+        elif o == "-e" or o == "--end":
+            end = arg
+
+
+
+
     w = workingtime.WorkingTime(config.WORKING_HOURS_PER_DAY, config.BUSINESS_DAYS, config.WEEK_DAYS)
     r = api.ReportAPI(config.API_TOKEN, config.TIMEZONE, config.WORKSPACE_ID)
 
@@ -117,6 +189,13 @@ def main():
     # result = db.query('SELECT country, COUNT(*) c FROM user GROUP BY country')
     # for row in result:
     #     print(row['country'], row['c'])
+
+def print_config():
+    from pprint import pprint
+    pprint (vars(config))
+
+    # for attr in dir(config):
+    #     print "config.%s = %s" % (attr, getattr(config, attr))
 
 
 

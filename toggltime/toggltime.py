@@ -173,6 +173,9 @@ class Toggletime(object):
 
     def roundup(self):
         # TODO: complete roundup
+
+        # def myround(x, base=5):
+        #     return int(base * round(float(x)/base))
         True
 
 
