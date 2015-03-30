@@ -17,7 +17,7 @@ from toggltime import timelib
 import dateutil.parser
 
 
-version = "1"
+version = "0.9"
 url = "http://www.pabloendres.com/tools#timesheet"
 verbose = False
 

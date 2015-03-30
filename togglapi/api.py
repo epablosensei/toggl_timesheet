@@ -140,10 +140,9 @@ class ReportAPI(object):
             workspace_id = self.worksheet_id
 
         url = self._make_url(section='details', params={'since': since, 'until': until,
-                                                        'user_agent': 'epablo+toggletime@pabloendres.com',
-                                                        'rounding': rounding, 'workspace_id': workspace_id})
-        # TODO: add useragent to the config
-
+                                                        'user_agent': 'toggl_timesheet,
+                                                        'rounding': rounding, 'workspace_id': workspace_id,
+                                                        'per_page': per_page})
         r = self._query(url=url, method='GET')
         res = r.json()
 
