@@ -1,21 +1,29 @@
-from dateutil.rrule import SA, SU, MO, TU, WE, TH, FR
+# Diretory where to look for and write the data
+DATA_DIR = 'data'
 
 # Toggl API Token
 API_TOKEN             = 'ADD YOUR API TOKEN HERE'
 
-#Number Precision
-PRECISION             = 2
 
-# Target Configurations
-WORKING_HOURS_PER_DAY = 8
-BUSINESS_DAYS         = (SA, SU, MO, TU, WE)
-WEEK_DAYS             = (SA, SU, MO, TU, WE, TH, FR)
-TOLERANCE_PERCENTAGE  = 0.1
+# Worksheetid
+WORKSPACE_ID = 'ADD YOUR WORKSPACE_ID TOKEN HERE'
 
 # Timezone
-TIMEZONE              = '+02:00'
+TIMEZONE = '+02:00'
 
-# Salary Configurtions
-SHOW_SALARY           = False
-SALARY                = 0
+# Roundup
+# Rounding adjusts the duration of each entry
+# ROUNDUP = 15  -> :00 :15 :30 :45; ROUNDUP = 30  -> :00 :30; ROUNDUP= 1  -> :00, 0 -> don't round up
+ROUNDUP = 15
+
+# Align time
+# This is used to align the start - end time of each entry and with it the duration
+# ALIGN_TIME = 15  -> :00 :15 :30 :45
+# ALIGN_TIME = 30  -> :00 :30
+# ALIGN_TIME = 1  -> :00
+# ALIGN_TIME = 0 don't align
+# Example: start 7:20 - end 8:20 and ALIGN_TIME = 15  will be adjusted to: start 7:15 - end 8:30
+ALIGN_TIME = 15
+
+
 

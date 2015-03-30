@@ -7,12 +7,19 @@ import os
 import sys
 import config
 import requests
+import dataset
+import csv
+import getopt
 
 from togglapi import api
-from toggltarget import target
-from workingtime import workingtime
 from toggltime import toggltime
-from datetime import datetime
+from toggltime import timelib
+import dateutil.parser
+
+
+version = "0.9"
+url = "http://www.pabloendres.com/tools#timesheet"
+verbose = False
 
 
 def internet_on():
@@ -26,85 +33,165 @@ def internet_on():
         return False
 
 
-def print_csv(toggltime_list):
+def print_csv(entry_list, start='', stop='', client='No_client'):
     """
 
-    :param toggltime_list:
+    :param entry_list, start='', stop='', client='No client',
     :return:
     """
-    # print the headers
-    print "date,start,stop,duration,duration_dec"
-    for tt in toggltime_list:
-        print("%s,%s,%s,%s,%s", tt.start.strftime("%Y-%m-%d"), tt.start.strftime("%H:%M"), tt.stop.strftime("%H:%M"),
-        tt.duration, tt.duration_dec)
+
+    if client == '':
+        client = 'No_client'
+
+    filename = config.DATA_DIR + "/" + timelib.year_month_only(start) + '-' + client + ".csv"
+    with open(filename, 'w') as f:
+        try:
+            print "writing " + filename
+            writer = csv.writer(f, delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
+            writer.writerow(("Client: ", client))
+            writer.writerow(("Period: ", "%s - %s" % (start, stop)))
+            writer.writerow((""))
+
+            writer.writerow(("date", "start", "stop", "duration_dec"))
+            for entry in entry_list:
+                writer.writerow((entry['start'], entry['start_time'], entry['stop_time'], entry['duration_dec']))
+        finally:
+            f.close()
+
+
+def usage(error_msg=''):
+    """ Show usage options """
+
+    global version
+    global url
+
+    print error_msg
+    print ""
+    print "timeheet v" + version + "\t" + url
+    print "usage:  timeheet.py [OPTION...] \n"
+    print "     -h, --help                          display this help"
+    print "     -t [token], --api-token=token       Toggl API token"
+    print "     -d dirname, --data-dir=dirname      directory where to store results and local database"
+    print "     -r value,   --roundup=value         round up precision"
+    print "     -a,         --align-time=value      Align the start - end time of each entry"
+    print "     -z,         --time-zone=tz          Timezone to use. Format \"+HH:MM\""
+    print "     -w,         --workspace-id=id       Toogl Worskpace ID"
+    print "     -s,         --start=YYYY-MM-DD      Start of the report - default: last month"
+    print "     -e,         --end=YYYY-MM-DD        End of the report - default: end of last month"
+    print ""
+    print ""
+    print "ROUNDUP = 15  -> :00 :15 :30 :45; ROUNDUP = 30  -> :00 :30; ROUNDUP= 1  -> :00, 0 -> don't round up"
+    print "ALIGN = 15  -> :00 :15 :30 :45; ALIGN = 30  -> :00 :30; ALIGN= 1  -> :00, 0 -> don't round up"
+    print ""
+    exit()
+
 
 def main():
-    w = workingtime.WorkingTime(config.WORKING_HOURS_PER_DAY, config.BUSINESS_DAYS, config.WEEK_DAYS)
-    # a = api.TogglAPI(config.API_TOKEN, config.TIMEZONE)
-    r = api.ReportAPI(config.API_TOKEN, config.TIMEZONE, config.WORKSPACE_ID)
+    # 'API_TOKEN': '38bf888afc4203fb443a5503b1f36252',
+    # 'DATA_DIR': 'data',
+    # 'ROUNDUP': 15,
+    # ALIGN_TIME': 15
+    # 'TIMEZONE': '+02:00',
+    # 'WORKSPACE_ID': '507341',
 
-    time_entries = []
-    toggltime_list = []
+    start = False
+    stop = False
+
+    try:
+        opts, args = getopt.gnu_getopt(
+            sys.argv[1:], "hd:r:a:t:z:w:s:e:",
+            ["help", "api-token=", "data-dir=", "roundup=", "align-time=", "time-zone=", \
+             "workspace-id=", "start=", "end="])
+    except getopt.GetoptError, e:
+        usage(e.msg)
+
+    for o, arg in opts:
+        if o == "-h" or o == "--help":
+            usage()
+            sys.exit(0)
+        elif o == "-t" or o == "--api-token":
+            config.API_TOKEN = arg
+        elif o == "-d" or o == "--data-dir":
+            config.DATA_DIR = arg
+        elif o == "-r" or o == "--roundup":
+            config.ROUNDUP = arg
+        elif o == "-a" or o == "--align-time":
+            config.ALIGN_TIME = arg
+        elif o == "-z" or o == "--time-zone":
+            config.TIMEZONE = arg
+        elif o == "-w" or o == "--workspace-id":
+            config.WORKSPACE_ID = arg
+        elif o == "-s" or o == "--start":
+            start = arg
+        elif o == "-e" or o == "--end":
+            stop = arg
+
+    if not start and not stop:
+        start = timelib.last_month_start()
+        stop = timelib.last_month_end()
+    elif start and not stop:
+        start = dateutil.parser.parse(start)
+        stop = timelib.month_end(start)
+    elif not start and stop:
+        stop = dateutil.parser.parse(stop)
+        start = timelib.month_start(stop)
+    else:
+        start = dateutil.parser.parse(start)
+        stop = dateutil.parser.parse(stop)
+
+    r = api.ReportAPI(config.API_TOKEN, config.TIMEZONE, config.WORKSPACE_ID)
 
     print "Hi"
     print "Checking Internet connectivity..."
     if not internet_on():
         print "OMG! There is no internet connection!"
-        print "Good Bye Cruel World!"
         sys.exit()
-    print "Internet seems fine!"
     print "\nTrying to connect to Toggl, hang on!\n"
     try:
-        # time_entries = a.get_tracked_entries(start_date=w.month_start, end_date=w.month_end)
-        time_entries = r.get_detailed_report(since=w.month_start, until=w.month_end)
+        print ("Getting reports for entries between %s and %s\n" % (start, stop))
+        time_entries = r.get_detailed_report(start, stop)
     except:
         print "OMG! Toggle request failed for some mysterious reason!"
-        print "Good Bye Cruel World!"
+        sys.exc_info()[0]
         sys.exit()
 
-    print len(time_entries)
-    # for entry in time_entries:
-    #     print entry
-    #     tt = toggltime.Toggletime(entry)
-    #     tt.roundup()
-    #     toggltime_list.append(tt)
-    #
-    # print_csv(toggltime_list)
-        # start = rounddown_start_time(entry['start'])
-        # stop = roundup_finish_time(entry['stop'])
-        # print "start: " +start + " -- " + entry['start']
-        # print "start: " +stop + " -- " + entry['stop']
+    # connecting to a SQLite database
+    db_name = config.DATA_DIR + "/" + start.strftime("%Y-%m") + ".db"
+    db_name_old = db_name + ".old"
 
+    # Check if the db file already exists
+    if os.path.exists(db_name):
+        os.rename(db_name, db_name_old)
+    elif os.path.exists(db_name) and os.path.exists(db_name_old):
+        print("Deleting %s and renaming %s as %s." % (db_name_old, db_name, db_name_old))
+        os.rename(db_name, db_name_old)
+    else:
+        print("Sorry, I can not remove %s file." % db_name)
 
+    db = dataset.connect("sqlite:///" + db_name)
 
+    # get a reference to the table
+    table = db['timesheet']
 
+    # Insert the entries in the DB
+    for entry in time_entries:
+        tt = toggltime.Toggletime(entry, roundup=config.ROUNDUP, align_time=config.ALIGN_TIME)
+        tt.align_start_stop()
+        tt.roundup()
+        table.insert(tt.get_time_entry)
 
+    # Get the list of clients
+    clients = db.query('select distinct(client) from timesheet;')
 
-    sys.exit()
+    for c in clients:
+        timeheet = db.query("select start, min(start_time) as start_time, max(stop_time) as stop_time, \
+        sum(duration_dec) as duration_dec from timesheet where client='" + c['client'] + "' group by start;")
+        print_csv(timeheet, start.date(), stop.date(), c['client'])
 
-    t.required_hours = w.required_hours_this_month
-    t.tolerance = config.TOLERANCE_PERCENTAGE
+def print_config():
+    from pprint import pprint
 
-    print "So far you have tracked",
-    print "Total days left till deadline : {}".format(w.days_left_count)
-    print "\nThis month targets [Required (minimum)] : {} ({})".format(w.required_hours_this_month,
-                                                                       w.required_hours_this_month - (
-                                                                       w.required_hours_this_month * config.TOLERANCE_PERCENTAGE))
-    print "\nTo achieve the minimum:\n\tyou should log {0:.2f} hours every business day".format(normal_min_hours)
-    print "\tor log {0:.2f} hours every day".format(crunch_min_hours)
-    print "\tleft is : {0:.2f}".format(
-        (w.required_hours_this_month - (w.required_hours_this_month * config.TOLERANCE_PERCENTAGE)) - t.achieved_hours)
-
-    normal_required_hours, crunch_required_hours = t.get_required_daily_hours(w.business_days_left_count,
-                                                                              w.days_left_count)
-
-    print "\nTo achieve the required :\n\tyou should log {0:.2f} hours every business day".format(normal_required_hours)
-    print "\tor log {0:.2f} hours every day".format(crunch_required_hours)
-    print "\tleft is : {0:.2f}".format(w.required_hours_this_month - t.achieved_hours)
-    print "\nHow your progress looks:"
-    bar = percentile_bar(t.achieved_percentage, config.TOLERANCE_PERCENTAGE)
-    print bar
-
+    pprint(vars(config))
 
 if __name__ == '__main__':
     main()
