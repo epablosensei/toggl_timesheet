@@ -140,7 +140,7 @@ class ReportAPI(object):
             workspace_id = self.worksheet_id
 
         url = self._make_url(section='details', params={'since': since, 'until': until,
-                                                        'user_agent': 'toggl_timesheet,
+                                                        'user_agent': 'toggl_timesheet',
                                                         'rounding': rounding, 'workspace_id': workspace_id,
                                                         'per_page': per_page})
         r = self._query(url=url, method='GET')
@@ -158,7 +158,7 @@ class ReportAPI(object):
             # Get all pages
             for page in range(2, last_page + 1):
                 url = self._make_url(section='details', params={'since': since, 'until': until,
-                                                                'user_agent': 'epablo+toggletime@pabloendres.com',
+                                                                'user_agent': 'toggl_timesheet',
                                                                 'rounding': rounding, 'workspace_id': workspace_id,
                                                                 'page': page})
                 r = self._query(url=url, method='GET')

@@ -32,6 +32,10 @@ def last_month_end(end=datetime.now()):
     return end + relativedelta(months=-1, day=31, hour=11, minute=59, second=59, microsecond=0)
 
 
+def year_month_only(start=datetime.now()):
+    tmp = start + relativedelta(day=1, hour=0, minute=0, second=0, microsecond=0)
+    return tmp.strftime("%Y-%m")
+
 if __name__ == '__main__':
     import dateutil.parser
 
@@ -39,6 +43,7 @@ if __name__ == '__main__':
     print last_month_end().date()
     start = dateutil.parser.parse('2015-03-15').date()
     print start
+    print year_month_only()
 
     import doctest
 
