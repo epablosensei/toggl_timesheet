@@ -43,7 +43,7 @@ def print_csv(entry_list, start='', stop='', client='No_client'):
     if client == '':
         client = 'No_client'
 
-    filename = config.DATA_DIR + "/" + client + ".csv"
+    filename = config.DATA_DIR + "/" + timelib.year_month_only(start) + '-' + client + ".csv"
     with open(filename, 'w') as f:
         try:
             print "writing " + filename
@@ -67,7 +67,7 @@ def usage(error_msg=''):
 
     print error_msg
     print ""
-    print "timeheet v-" + version + "\t" + url
+    print "timeheet v" + version + "\t" + url
     print "usage:  timeheet.py [OPTION...] \n"
     print "     -h, --help                          display this help"
     print "     -t [token], --api-token=token       Toggl API token"
