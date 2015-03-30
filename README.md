@@ -2,7 +2,7 @@ Toggl Timesheet
 ===============
 
 I use Toggl (www.toggl.com) to track time for my consulting work and some clients need just a simple time sheet, 
-so I adapted this small little project from [toggl_timesheet](https://github.com/epablosensei/toggl_timesheet) to fit my needs.
+so I adapted this small little project from [toggl_target](https://github.com/mos3abof/toggl_target) to fit my needs.
 
 It started with some tweeks, but by this version mainly the inspiration and the toggleapi.TogglAPI remain.
 
