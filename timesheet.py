@@ -12,7 +12,6 @@ import csv
 import getopt
 
 from togglapi import api
-from workingtime import workingtime
 from toggltime import toggltime
 from toggltime import timelib
 import dateutil.parser
@@ -21,6 +20,7 @@ import dateutil.parser
 version = "1"
 url = "http://www.pabloendres.com/tools#timesheet"
 verbose = False
+
 
 def internet_on():
     """Checks if internet connection is on by connecting to Google"""
@@ -54,9 +54,10 @@ def print_csv(entry_list, start='', stop='', client='No_client'):
 
             writer.writerow(("date", "start", "stop", "duration_dec"))
             for entry in entry_list:
-                writer.writerow((entry['start'],  entry['start_time'],  entry['stop_time'],  entry['duration_dec']))
+                writer.writerow((entry['start'], entry['start_time'], entry['stop_time'], entry['duration_dec']))
         finally:
             f.close()
+
 
 def usage(error_msg=''):
     """ Show usage options """
@@ -66,7 +67,7 @@ def usage(error_msg=''):
 
     print error_msg
     print ""
-    print "timeheet v-" + version + "\t"+ url
+    print "timeheet v-" + version + "\t" + url
     print "usage:  timeheet.py [OPTION...] \n"
     print "     -h, --help                          display this help"
     print "     -t [token], --api-token=token       Toggl API token"
@@ -84,8 +85,8 @@ def usage(error_msg=''):
     print ""
     exit()
 
-def main():
 
+def main():
     # 'API_TOKEN': '38bf888afc4203fb443a5503b1f36252',
     # 'DATA_DIR': 'data',
     # 'ROUNDUP': 15,
@@ -98,8 +99,9 @@ def main():
 
     try:
         opts, args = getopt.gnu_getopt(
-                sys.argv[1:], "hd:r:a:t:z:w:s:e:", ["help", "api-token=", "data-dir=", "roundup=", "align-time=", "time-zone=", \
-                                                  "workspace-id=", "start=", "end="])
+            sys.argv[1:], "hd:r:a:t:z:w:s:e:",
+            ["help", "api-token=", "data-dir=", "roundup=", "align-time=", "time-zone=", \
+             "workspace-id=", "start=", "end="])
     except getopt.GetoptError, e:
         usage(e.msg)
 
@@ -146,7 +148,7 @@ def main():
         sys.exit()
     print "\nTrying to connect to Toggl, hang on!\n"
     try:
-        print ("Getting reports for entries between %s and %s\n" %(start, stop))
+        print ("Getting reports for entries between %s and %s\n" % (start, stop))
         time_entries = r.get_detailed_report(start, stop)
     except:
         print "OMG! Toggle request failed for some mysterious reason!"
@@ -166,7 +168,7 @@ def main():
     else:
         print("Sorry, I can not remove %s file." % db_name)
 
-    db = dataset.connect("sqlite:///"+db_name)
+    db = dataset.connect("sqlite:///" + db_name)
 
     # get a reference to the table
     table = db['timesheet']
@@ -184,28 +186,12 @@ def main():
     for c in clients:
         timeheet = db.query("select start, min(start_time) as start_time, max(stop_time) as stop_time, \
         sum(duration_dec) as duration_dec from timesheet where client='" + c['client'] + "' group by start;")
-        print_csv(timeheet, start.date() ,stop.date(), c['client'])
-
-    # select start, min(start_time) ,max(stop_time), sum(duration), sum(duration_dec) from timesheet where client='Vodafone' group by start ;
-
-
-    # # Insert a new record.
-    # table.insert(dict(name='John Doe', age=46, country='China'))
-    #
-    # # dataset will create "missing" columns any time you insert a dict with an unknown key
-    # table.insert(dict(name='Jane Doe', age=37, country='France', gender='female'))
-    # result = db.query('SELECT country, COUNT(*) c FROM user GROUP BY country')
-    # for row in result:
-    #     print(row['country'], row['c'])
+        print_csv(timeheet, start.date(), stop.date(), c['client'])
 
 def print_config():
     from pprint import pprint
-    pprint (vars(config))
 
-    # for attr in dir(config):
-    #     print "config.%s = %s" % (attr, getattr(config, attr))
-
-
+    pprint(vars(config))
 
 if __name__ == '__main__':
     main()

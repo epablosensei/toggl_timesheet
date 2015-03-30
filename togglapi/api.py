@@ -1,9 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-#@author Mosab Ahmad <mosab.ahmad@gmail.com>
+# @author Pablo Endres <epablo+code@pabloendres.com> - ReportAPI
+#@author Mosab Ahmad <mosab.ahmad@gmail.com> - TogglAPI
+
+
+from urllib import urlencode
 
 import requests
-from urllib import urlencode
 from requests.auth import HTTPBasicAuth
 
 
@@ -12,7 +15,7 @@ class TogglAPI(object):
 
     def __init__(self, api_token, timezone):
         self.api_token = api_token
-        self.timezone  = timezone
+        self.timezone = timezone
 
     def _make_url(self, section='time_entries', params={}):
         """Constructs and returns an api url to call with the section of the API to be called
@@ -50,7 +53,8 @@ class TogglAPI(object):
     def get_time_entries(self, start_date='', end_date='', timezone=''):
         """Get Time Entries JSON object from Toggl"""
 
-        url = self._make_url(section='time_entries', params={'start_date': start_date+self.timezone, 'end_date': end_date+self.timezone})
+        url = self._make_url(section='time_entries',
+                             params={'start_date': start_date + self.timezone, 'end_date': end_date + self.timezone})
         r = self._query(url=url, method='GET')
         return r.json()
 
@@ -75,6 +79,7 @@ class TogglAPI(object):
         if time_entries is None:
             return 0
 
+
 class ReportAPI(object):
     """
         A wrapper for Report API v2
@@ -83,7 +88,7 @@ class ReportAPI(object):
 
     def __init__(self, api_token, timezone, workspace_id):
         self.api_token = api_token
-        self.timezone  = timezone
+        self.timezone = timezone
         self.worksheet_id = workspace_id
 
 
@@ -152,18 +157,19 @@ class ReportAPI(object):
 
         if last_page > 1:
             # Get all pages
-            for page in range(2, last_page+1):
-
+            for page in range(2, last_page + 1):
                 url = self._make_url(section='details', params={'since': since, 'until': until,
-                                                        'user_agent': 'epablo+toggletime@pabloendres.com',
-                                                        'rounding': rounding, 'workspace_id': workspace_id,
-                                                        'page': page})
+                                                                'user_agent': 'epablo+toggletime@pabloendres.com',
+                                                                'rounding': rounding, 'workspace_id': workspace_id,
+                                                                'page': page})
                 r = self._query(url=url, method='GET')
                 res = r.json()
                 data_list = data_list + res['data']
 
         return data_list
 
+
 if __name__ == '__main__':
     import doctest
+
     doctest.testmod()

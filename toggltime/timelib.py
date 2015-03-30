@@ -27,13 +27,13 @@ def today():
 def last_month_start(start=datetime.now()):
     return start + relativedelta(months=-1, day=1, hour=0, minute=0, second=0, microsecond=0)
 
+
 def last_month_end(end=datetime.now()):
     return end + relativedelta(months=-1, day=31, hour=11, minute=59, second=59, microsecond=0)
 
 
 if __name__ == '__main__':
     import dateutil.parser
-
 
     print last_month_start().date()
     print last_month_end().date()
