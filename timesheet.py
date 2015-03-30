@@ -9,11 +9,17 @@ import config
 import requests
 import dataset
 import csv
+import getopt
 
 from togglapi import api
-from workingtime import workingtime
 from toggltime import toggltime
-from datetime import datetime
+from toggltime import timelib
+import dateutil.parser
+
+
+version = "1"
+url = "http://www.pabloendres.com/tools#timesheet"
+verbose = False
 
 
 def internet_on():
@@ -48,17 +54,92 @@ def print_csv(entry_list, start='', stop='', client='No_client'):
 
             writer.writerow(("date", "start", "stop", "duration_dec"))
             for entry in entry_list:
-                writer.writerow((entry['start'],  entry['start_time'],  entry['stop_time'],  entry['duration_dec']))
+                writer.writerow((entry['start'], entry['start_time'], entry['stop_time'], entry['duration_dec']))
         finally:
             f.close()
 
 
-def main():
-    w = workingtime.WorkingTime(config.WORKING_HOURS_PER_DAY, config.BUSINESS_DAYS, config.WEEK_DAYS)
-    r = api.ReportAPI(config.API_TOKEN, config.TIMEZONE, config.WORKSPACE_ID)
+def usage(error_msg=''):
+    """ Show usage options """
 
-    start = w.month_start
-    stop = w.month_end
+    global version
+    global url
+
+    print error_msg
+    print ""
+    print "timeheet v-" + version + "\t" + url
+    print "usage:  timeheet.py [OPTION...] \n"
+    print "     -h, --help                          display this help"
+    print "     -t [token], --api-token=token       Toggl API token"
+    print "     -d dirname, --data-dir=dirname      directory where to store results and local database"
+    print "     -r value,   --roundup=value         round up precision"
+    print "     -a,         --align-time=value      Align the start - end time of each entry"
+    print "     -z,         --time-zone=tz          Timezone to use. Format \"+HH:MM\""
+    print "     -w,         --workspace-id=id       Toogl Worskpace ID"
+    print "     -s,         --start=YYYY-MM-DD      Start of the report - default: last month"
+    print "     -e,         --end=YYYY-MM-DD        End of the report - default: end of last month"
+    print ""
+    print ""
+    print "ROUNDUP = 15  -> :00 :15 :30 :45; ROUNDUP = 30  -> :00 :30; ROUNDUP= 1  -> :00, 0 -> don't round up"
+    print "ALIGN = 15  -> :00 :15 :30 :45; ALIGN = 30  -> :00 :30; ALIGN= 1  -> :00, 0 -> don't round up"
+    print ""
+    exit()
+
+
+def main():
+    # 'API_TOKEN': '38bf888afc4203fb443a5503b1f36252',
+    # 'DATA_DIR': 'data',
+    # 'ROUNDUP': 15,
+    # ALIGN_TIME': 15
+    # 'TIMEZONE': '+02:00',
+    # 'WORKSPACE_ID': '507341',
+
+    start = False
+    stop = False
+
+    try:
+        opts, args = getopt.gnu_getopt(
+            sys.argv[1:], "hd:r:a:t:z:w:s:e:",
+            ["help", "api-token=", "data-dir=", "roundup=", "align-time=", "time-zone=", \
+             "workspace-id=", "start=", "end="])
+    except getopt.GetoptError, e:
+        usage(e.msg)
+
+    for o, arg in opts:
+        if o == "-h" or o == "--help":
+            usage()
+            sys.exit(0)
+        elif o == "-t" or o == "--api-token":
+            config.API_TOKEN = arg
+        elif o == "-d" or o == "--data-dir":
+            config.DATA_DIR = arg
+        elif o == "-r" or o == "--roundup":
+            config.ROUNDUP = arg
+        elif o == "-a" or o == "--align-time":
+            config.ALIGN_TIME = arg
+        elif o == "-z" or o == "--time-zone":
+            config.TIMEZONE = arg
+        elif o == "-w" or o == "--workspace-id":
+            config.WORKSPACE_ID = arg
+        elif o == "-s" or o == "--start":
+            start = arg
+        elif o == "-e" or o == "--end":
+            stop = arg
+
+    if not start and not stop:
+        start = timelib.last_month_start()
+        stop = timelib.last_month_end()
+    elif start and not stop:
+        start = dateutil.parser.parse(start)
+        stop = timelib.month_end(start)
+    elif not start and stop:
+        stop = dateutil.parser.parse(stop)
+        start = timelib.month_start(stop)
+    else:
+        start = dateutil.parser.parse(start)
+        stop = dateutil.parser.parse(stop)
+
+    r = api.ReportAPI(config.API_TOKEN, config.TIMEZONE, config.WORKSPACE_ID)
 
     print "Hi"
     print "Checking Internet connectivity..."
@@ -67,6 +148,7 @@ def main():
         sys.exit()
     print "\nTrying to connect to Toggl, hang on!\n"
     try:
+        print ("Getting reports for entries between %s and %s\n" % (start, stop))
         time_entries = r.get_detailed_report(start, stop)
     except:
         print "OMG! Toggle request failed for some mysterious reason!"
@@ -74,7 +156,7 @@ def main():
         sys.exit()
 
     # connecting to a SQLite database
-    db_name = config.DATA_DIR + "/" + w.month_start.strftime("%Y-%m") + ".db"
+    db_name = config.DATA_DIR + "/" + start.strftime("%Y-%m") + ".db"
     db_name_old = db_name + ".old"
 
     # Check if the db file already exists
@@ -86,7 +168,7 @@ def main():
     else:
         print("Sorry, I can not remove %s file." % db_name)
 
-    db = dataset.connect("sqlite:///"+db_name)
+    db = dataset.connect("sqlite:///" + db_name)
 
     # get a reference to the table
     table = db['timesheet']
@@ -104,21 +186,12 @@ def main():
     for c in clients:
         timeheet = db.query("select start, min(start_time) as start_time, max(stop_time) as stop_time, \
         sum(duration_dec) as duration_dec from timesheet where client='" + c['client'] + "' group by start;")
-        print_csv(timeheet, start.date() ,stop.date(), c['client'])
+        print_csv(timeheet, start.date(), stop.date(), c['client'])
 
-    # select start, min(start_time) ,max(stop_time), sum(duration), sum(duration_dec) from timesheet where client='Vodafone' group by start ;
+def print_config():
+    from pprint import pprint
 
-
-    # # Insert a new record.
-    # table.insert(dict(name='John Doe', age=46, country='China'))
-    #
-    # # dataset will create "missing" columns any time you insert a dict with an unknown key
-    # table.insert(dict(name='Jane Doe', age=37, country='France', gender='female'))
-    # result = db.query('SELECT country, COUNT(*) c FROM user GROUP BY country')
-    # for row in result:
-    #     print(row['country'], row['c'])
-
-
+    pprint(vars(config))
 
 if __name__ == '__main__':
     main()

@@ -1,18 +1,20 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-#@author Pablo Endres <epablo+code@pabloendres.com>
+# @author Pablo Endres <epablo+code@pabloendres.com>
 
 
 from __future__ import division
 from datetime import timedelta
+
 import dateutil.parser
+
 
 class Toggletime(object):
     """ Model Toggle time related items JSON time entries
         This should work with both items from the TogglAPI and the ReportAPI
     """
 
-    def __init__(self, time_entry, roundup = 0, align_time = 0):
+    def __init__(self, time_entry, roundup=0, align_time=0):
         """
         :param time_entry:
         :param roundup:
@@ -78,19 +80,19 @@ class Toggletime(object):
             elif 40 < self.start.minute <= 50:
                 self.start = self.start.replace(minute=45, second=0)
             else:
-                self.start = self.start.replace(hour=self.start.hour+1, minute=0, second=0)
+                self.start = self.start.replace(hour=self.start.hour + 1, minute=0, second=0)
         elif self.ALIGN_TIME == 30:
             if 0 <= self.start.minute <= 15:
                 self.start = self.start.replace(minute=0, second=0)
             elif 15 < self.start.minute <= 40:
                 self.start = self.start.replace(minute=30, second=0)
             elif 40 < self.start.minute <= 59:
-                self.start = self.start.replace(hour=self.start.hour+1, minute=0, second=0)
+                self.start = self.start.replace(hour=self.start.hour + 1, minute=0, second=0)
         elif self.ALIGN_TIME == 1:
             if 0 <= self.start.minute < 6:
-               self.start = self.start.replace(minute=0, second=0)
+                self.start = self.start.replace(minute=0, second=0)
             elif 6 <= self.start.minute <= 59:
-                self.start = self.start.replace(hour=self.start.hour+1, minute=0, second=0)
+                self.start = self.start.replace(hour=self.start.hour + 1, minute=0, second=0)
 
     def align_stop(self):
         """
@@ -112,17 +114,17 @@ class Toggletime(object):
             elif 30 < self.stop.minute <= 45:
                 self.stop = self.stop.replace(minute=45, second=0)
             elif 45 < self.stop.minute <= 59:
-                self.stop = self.stop.replace(hour=self.stop.hour+1, minute=0, second=0)
+                self.stop = self.stop.replace(hour=self.stop.hour + 1, minute=0, second=0)
         elif self.ALIGN_TIME == 30:
             if 0 < self.stop.minute <= 30:
                 self.stop = self.stop.replace(minute=30, second=0)
             elif 30 < self.stop.minute <= 59:
-                self.stop = self.stop.replace(hour=self.stop.hour+1, minute=0, second=0)
+                self.stop = self.stop.replace(hour=self.stop.hour + 1, minute=0, second=0)
         elif self.ALIGN_TIME == 1:
             if 0 <= self.stop.minute <= 5:
                 self.stop = self.stop.replace(minute=0, second=0)
             elif 5 < self.stop.minute <= 59:
-                self.stop = self.stop.replace(hour=self.stop.hour+1, minute=0, second=0)
+                self.stop = self.stop.replace(hour=self.stop.hour + 1, minute=0, second=0)
 
     def calculate_duration(self):
         """
@@ -147,7 +149,7 @@ class Toggletime(object):
         """
         :return: time in hours
         """
-        return time_sec/60/60
+        return time_sec / 60 / 60
 
     def update_time_entry(self):
         """
@@ -173,11 +175,15 @@ class Toggletime(object):
 
     def roundup(self):
         # TODO: complete roundup
+
+        # def myround(x, base=5):
+        #     return int(base * round(float(x)/base))
         True
 
 
 if __name__ == '__main__':
     import doctest
+
     doctest.testmod()
 
     print "TogglAPI - test"
@@ -197,10 +203,11 @@ if __name__ == '__main__':
     print ""
     print "ReportAPI - test"
     tt = Toggletime({u'updated': u'2015-03-02T10:02:59+01:00', u'task': u'Other', u'end': u'2015-03-02T09:00:10+01:00', \
-                    u'description': u'Other', u'project_color': u'13', u'tags': '', u'is_billable': True, \
-                    u'pid': 5503294, u'cur': u'EUR', u'project': u'Proy1', u'start': u'2015-03-02T07:17:00+01:00', \
-                    u'client': u'Client1', u'user': u'Max', u'billable': 0.0, u'tid': 3399820, \
-                    u'project_hex_color': u'#bc2d07', u'dur': 7200000, u'use_stop': True, u'id': 205009936, u'uid': 676699})
+                     u'description': u'Other', u'project_color': u'13', u'tags': '', u'is_billable': True, \
+                     u'pid': 5503294, u'cur': u'EUR', u'project': u'Proy1', u'start': u'2015-03-02T07:17:00+01:00', \
+                     u'client': u'Client1', u'user': u'Max', u'billable': 0.0, u'tid': 3399820, \
+                     u'project_hex_color': u'#bc2d07', u'dur': 7200000, u'use_stop': True, u'id': 205009936,
+                     u'uid': 676699})
     tt.ALIGN_TIME = 15
     print tt.start, tt.stop, tt.duration, tt.ROUNDUP, tt.ALIGN_TIME
     print tt.duration_dec, tt.stop - tt.start
