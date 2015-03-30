@@ -14,7 +14,8 @@ import getopt
 from togglapi import api
 from workingtime import workingtime
 from toggltime import toggltime
-from datetime import datetime
+from toggltime import timelib
+import dateutil.parser
 
 
 version = "1"
@@ -93,7 +94,7 @@ def main():
     # 'WORKSPACE_ID': '507341',
 
     start = False
-    end = False
+    stop = False
 
     try:
         opts, args = getopt.gnu_getopt(
@@ -121,16 +122,22 @@ def main():
         elif o == "-s" or o == "--start":
             start = arg
         elif o == "-e" or o == "--end":
-            end = arg
+            stop = arg
 
+    if not start and not stop:
+        start = timelib.last_month_start()
+        stop = timelib.last_month_end()
+    elif start and not stop:
+        start = dateutil.parser.parse(start)
+        stop = timelib.month_end(start)
+    elif not start and stop:
+        stop = dateutil.parser.parse(stop)
+        start = timelib.month_start(stop)
+    else:
+        start = dateutil.parser.parse(start)
+        stop = dateutil.parser.parse(stop)
 
-
-
-    w = workingtime.WorkingTime(config.WORKING_HOURS_PER_DAY, config.BUSINESS_DAYS, config.WEEK_DAYS)
     r = api.ReportAPI(config.API_TOKEN, config.TIMEZONE, config.WORKSPACE_ID)
-
-    start = w.month_start
-    stop = w.month_end
 
     print "Hi"
     print "Checking Internet connectivity..."
@@ -139,6 +146,7 @@ def main():
         sys.exit()
     print "\nTrying to connect to Toggl, hang on!\n"
     try:
+        print ("Getting reports for entries between %s and %s\n" %(start, stop))
         time_entries = r.get_detailed_report(start, stop)
     except:
         print "OMG! Toggle request failed for some mysterious reason!"
@@ -146,7 +154,7 @@ def main():
         sys.exit()
 
     # connecting to a SQLite database
-    db_name = config.DATA_DIR + "/" + w.month_start.strftime("%Y-%m") + ".db"
+    db_name = config.DATA_DIR + "/" + start.strftime("%Y-%m") + ".db"
     db_name_old = db_name + ".old"
 
     # Check if the db file already exists
