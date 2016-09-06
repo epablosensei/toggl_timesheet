@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @author Pablo Endres <epablo@pabloendres.com>
 # Based on toggl_target (https://github.com/mos3abof/toggl_target) by @mos3abof
