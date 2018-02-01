@@ -170,8 +170,9 @@ def main():
 
     db = dataset.connect("sqlite:///" + db_name)
 
-    # get a reference to the table
-    table = db['timesheet']
+    # Create the table without a primary_key and grab a reference
+    table = db.create_table('timesheet', primary_id=False)
+
 
     # Insert the entries in the DB
     for entry in time_entries:
