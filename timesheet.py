@@ -150,8 +150,9 @@ def main():
     try:
         print ("Getting reports for entries between %s and %s\n" % (start, stop))
         time_entries = r.get_detailed_report(start, stop)
-    except:
+    except Exception as e:
         print "OMG! Toggle request failed for some mysterious reason!"
+        print e.message
         sys.exc_info()[0]
         sys.exit()
 

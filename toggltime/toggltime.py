@@ -102,6 +102,7 @@ class Toggletime(object):
             self.ALIGN_TIME = 1  -> :00
             self.ALIGN_TIME = 0  -> do nothing
         """
+        #to-do: add special case when 23:50
 
         if self.ALIGN_TIME:
             self.stop = self.stop.replace(second=0)

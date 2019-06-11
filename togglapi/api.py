@@ -135,6 +135,7 @@ class ReportAPI(object):
         """Get a detailed report """
 
         data_list = []
+        last_page = 1   #Default is always 1
 
         if workspace_id == '':
             workspace_id = self.worksheet_id
@@ -149,10 +150,13 @@ class ReportAPI(object):
         total_count = res['total_count']
         per_page = res['per_page']
         data_list = data_list + res['data']
+        print "Total entries: " str(total_count)
 
         # Calculate how many pages we have to get
         if total_count % per_page != 0:
             last_page = (total_count // per_page) + 1
+        else:
+            last_page = (total_count // per_page)
 
         if last_page > 1:
             # Get all pages
