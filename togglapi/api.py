@@ -97,23 +97,23 @@ class ReportAPI(object):
         and parameters defined by key/pair values in the params dict.
 
         URLs:
-        The reports API base URL is https://toggl.com/reports/api/v2
-        Weekly report URL GET https://toggl.com/reports/api/v2/weekly
-        Detailed report URL: GET https://toggl.com/reports/api/v2/details
-        Summary report URL: GET https://toggl.com/reports/api/v2/summary
+        The reports API base URL is https://api.track.toggl.com/reports/api/v2
+        Weekly report URL GET https://api.track.toggl.com/reports/api/v2/weekly
+        Detailed report URL: GET https://api.track.toggl.com/reports/api/v2/details
+        Summary report URL: GET https://api.track.toggl.com/reports/api/v2/summary
 
         Default section is "details"
 
         >>> t = ReportAPI('_SECRET_TOGGLE_API_TOKEN_')
         >>> t._make_url(section='details', params = {})
-        'https://toggl.com/reports/api/v2/details'
+        'https://api.track.toggl.com/reports/api/v2/details'
 
         >>> t = ReportAPI('_SECRET_TOGGLE_API_TOKEN_')
         >>> t._make_url(section='details', params = {'since' : '2010-02-05T15:42:46+02:00', 'until' : '2010-02-12T15:42:46+02:00'})
-        'https://toggl.com/reports/api/v2/details?start_date=2010-02-05T15%3A42%3A46%2B02%3A00%2B02%3A00&end_date=2010-02-12T15%3A42%3A46%2B02%3A00%2B02%3A00'
+        'https://api.track.toggl.com/reports/api/v2/details?start_date=2010-02-05T15%3A42%3A46%2B02%3A00%2B02%3A00&end_date=2010-02-12T15%3A42%3A46%2B02%3A00%2B02%3A00'
         """
 
-        url = 'https://toggl.com/reports/api/v2/{}'.format(section)
+        url = 'https://api.track.toggl.com/reports/api/v2/{}'.format(section)
         if len(params) > 0:
             url = url + '?{}'.format(urlencode(params))
         return url
@@ -150,7 +150,7 @@ class ReportAPI(object):
         total_count = res['total_count']
         per_page = res['per_page']
         data_list = data_list + res['data']
-        print "Total entries: " str(total_count)
+        print "Total entries: " + str(total_count)
 
         # Calculate how many pages we have to get
         if total_count % per_page != 0:

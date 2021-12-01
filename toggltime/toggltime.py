@@ -115,6 +115,7 @@ class Toggletime(object):
             elif 30 < self.stop.minute <= 45:
                 self.stop = self.stop.replace(minute=45, second=0)
             elif 45 < self.stop.minute <= 59:
+                print self.stop
                 self.stop = self.stop.replace(hour=self.stop.hour + 1, minute=0, second=0)
         elif self.ALIGN_TIME == 30:
             if 0 < self.stop.minute <= 30:
