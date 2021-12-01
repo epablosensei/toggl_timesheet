@@ -52,9 +52,9 @@ def print_csv(entry_list, start='', stop='', client='No_client'):
             writer.writerow(("Period: ", "%s - %s" % (start, stop)))
             writer.writerow((""))
 
-            writer.writerow(("date", "start", "stop", "duration_dec"))
+            writer.writerow(("start date", "start time", "stop date", "stop time", "time (h)", "duration_dec"))
             for entry in entry_list:
-                writer.writerow((entry['start'], entry['start_time'], entry['stop_time'], entry['duration_dec']))
+                writer.writerow((entry['start'], entry['start_time'], '', entry['stop_time'], '', entry['duration_dec']))
         finally:
             f.close()
 
