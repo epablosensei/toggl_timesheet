@@ -1,6 +1,6 @@
 alembic==0.9.6
 banal==0.3.3
-certifi==2017.11.5
+certifi==2022.12.7
 chardet==3.0.4
 dataset==1.0.4
 idna==2.6
