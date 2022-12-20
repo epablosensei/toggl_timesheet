@@ -4,7 +4,7 @@ certifi==2017.11.5
 chardet==3.0.4
 dataset==1.0.4
 idna==2.6
-Mako==1.0.7
+Mako==1.2.2
 MarkupSafe==1.0
 normality==0.5.7
 python-dateutil==2.6.1
