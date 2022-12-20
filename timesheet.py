@@ -186,6 +186,7 @@ def main():
     clients = db.query('select distinct(client) from timesheet;')
 
     for c in clients:
+        c['client'] = str(c['client'] or '')
         timeheet = db.query("select start, min(start_time) as start_time, max(stop_time) as stop_time, \
         sum(duration_dec) as duration_dec from timesheet where client='" + c['client'] + "' group by start;")
         print_csv(timeheet, start.date(), stop.date(), c['client'])
