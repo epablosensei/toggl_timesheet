@@ -173,6 +173,7 @@ class Toggletime(object):
         """
         self.time_entry['start'] = self.start.date().isoformat()
         self.time_entry['stop'] = self.stop.date().isoformat()
+	self.time_entry['duration_dec'] = self.duration_dec
         return self.time_entry
 
     def roundup(self):
