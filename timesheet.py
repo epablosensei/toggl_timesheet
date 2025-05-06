@@ -52,9 +52,9 @@ def print_csv(entry_list, start='', stop='', client='No_client'):
             writer.writerow(("Period: ", "%s - %s" % (start, stop)))
             writer.writerow((""))
 
-            writer.writerow(("start date", "start time", "stop date", "stop time", "time (h)", "duration_dec"))
+            writer.writerow(("consultant", "start date", "start time", "stop date", "stop time", "time (h)", "duration_dec"))
             for entry in entry_list:
-                writer.writerow((entry['start'], entry['start_time'], '', entry['stop_time'], '', entry['duration_dec']))
+                writer.writerow((entry['user'], entry['start'], entry['start_time'], '', entry['stop_time'], '', entry['duration_dec']))
         finally:
             f.close()
 
@@ -78,6 +78,9 @@ def usage(error_msg=''):
     print "     -w,         --workspace-id=id       Toogl Worskpace ID"
     print "     -s,         --start=YYYY-MM-DD      Start of the report - default: last month"
     print "     -e,         --end=YYYY-MM-DD        End of the report - default: end of last month"
+    print "     -p,         --per-project            create separate CSVs per project under each client"
+    print "     -f,         --full                   export all entries to a single full.csv file"
+
     print ""
     print ""
     print "ROUNDUP = 15  -> :00 :15 :30 :45; ROUNDUP = 30  -> :00 :30; ROUNDUP= 1  -> :00, 0 -> don't round up"
@@ -96,12 +99,14 @@ def main():
 
     start = False
     stop = False
+    per_project = False
+    full = False
 
     try:
         opts, args = getopt.gnu_getopt(
-            sys.argv[1:], "hd:r:a:t:z:w:s:e:",
+            sys.argv[1:], "hd:r:a:t:z:w:s:e:pf",
             ["help", "api-token=", "data-dir=", "roundup=", "align-time=", "time-zone=", \
-             "workspace-id=", "start=", "end="])
+             "workspace-id=", "start=", "end=", "per-project", "full"])
     except getopt.GetoptError, e:
         usage(e.msg)
 
@@ -125,6 +130,10 @@ def main():
             start = arg
         elif o == "-e" or o == "--end":
             stop = arg
+        elif o == "-p" or o == "--per-project":
+            per_project = True
+        elif o == "-f" or o == "--full":
+            full = True
 
     if not start and not stop:
         start = timelib.last_month_start()
@@ -183,13 +192,68 @@ def main():
         table.insert(tt.get_time_entry)
 
     # Get the list of clients
-    clients = db.query('select distinct(client) from timesheet;')
+    if not full and not per_project:
+        clients = db.query('select distinct(client) from timesheet;')
 
-    for c in clients:
-        c['client'] = str(c['client'] or '')
-        timeheet = db.query("select start, min(start_time) as start_time, max(stop_time) as stop_time, \
-        sum(duration_dec) as duration_dec from timesheet where client='" + c['client'] + "' group by start;")
-        print_csv(timeheet, start.date(), stop.date(), c['client'])
+        for c in clients:
+            c['client'] = str(c['client'] or '')
+            timeheet = db.query("select user, start, min(start_time) as start_time, max(stop_time) as stop_time, \
+            sum(duration_dec) as duration_dec from timesheet where client='" + c['client'] + "' group by start;")
+            print_csv(timeheet, start.date(), stop.date(), c['client'])
+
+    if per_project:
+        clients = db.query('SELECT DISTINCT(client) FROM timesheet;')
+
+        for c in clients:
+            client_name = str(c['client'] or '')
+
+            projects = db.query(
+                "SELECT DISTINCT(project) FROM timesheet WHERE client = :client;",
+                {'client': client_name}
+            )
+
+            for p in projects:
+                project_name = str(p['project'] or '')
+
+                entries = db.query(
+                    "SELECT user, start, MIN(start_time) AS start_time, MAX(stop_time) AS stop_time, "
+                    "SUM(duration_dec) AS duration_dec "
+                    "FROM timesheet WHERE client = :client AND project = :project "
+                    "GROUP BY user, start;",
+                    {'client': client_name, 'project': project_name}
+                )
+
+                filename = "{}-{}-{}.csv".format(
+                    timelib.year_month_only(start),
+                    client_name,
+                    project_name
+                )
+
+                filepath = os.path.join(config.DATA_DIR, filename)
+                with open(filepath, 'w') as f:
+                    print "Writing " + filepath
+                    writer = csv.writer(f, delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
+                    writer.writerow(("Client:", client_name))
+                    writer.writerow(("Project:", project_name))
+                    writer.writerow(("Period:", "%s - %s" % (start, stop)))
+                    writer.writerow(())
+                    writer.writerow(("consultant", "start date", "start time", "stop date", "stop time", "time (h)", "duration_dec"))
+                    for entry in entries:
+                        writer.writerow((entry['user'], entry['start'], entry['start_time'], '', entry['stop_time'], '', entry['duration_dec']))
+    if full:
+        full_entries = db.query(
+            "SELECT user, start, start_time, stop, stop_time, duration_dec "
+            "FROM timesheet ORDER BY user, start;"
+        )
+        filename = os.path.join(config.DATA_DIR, timelib.year_month_only(start) + "-full.csv")
+        with open(filename, 'w') as f:
+            print "Writing " + filename
+            writer = csv.writer(f, delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
+            writer.writerow(("consultant", "start date", "start time", "stop date", "stop time", "time (h)", "duration_dec"))
+            for entry in full_entries:
+                writer.writerow((entry['user'], entry['start'], entry['start_time'], entry['stop'], entry['stop_time'], entry['duration_dec']))
+
+
 
 def print_config():
     from pprint import pprint
