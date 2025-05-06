@@ -3,7 +3,7 @@ banal==0.3.3
 certifi
 chardet==3.0.4
 dataset==1.0.4
-idna==2.6
+idna==3.7
 Mako
 MarkupSafe==1.0
 normality==0.5.7
