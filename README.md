@@ -51,22 +51,27 @@ pip install python-dateutil requests
 Usage
 -----
 
-    timeheet v-0.9	http://www.pabloendres.com/tools#timesheet
-    usage:  timeheet.py [OPTION...] 
-    
-         -h, --help                          display this help
-         -t [token], --api-token=token       Toggl API token
-         -d dirname, --data-dir=dirname      directory where to store results and local database
-         -r value,   --roundup=value         round up precision
-         -a,         --align-time=value      Align the start - end time of each entry
-         -z,         --time-zone=tz          Timezone to use. Format "+HH:MM"
-         -w,         --workspace-id=id       Toogl Worskpace ID
-         -s,         --start=YYYY-MM-DD      Start of the report - default: last month
-         -e,         --end=YYYY-MM-DD        End of the report - default: end of last month
-    
-    
-    ROUNDUP = 15  -> :00 :15 :30 :45; ROUNDUP = 30  -> :00 :30; ROUNDUP= 1  -> :00, 0 -> don't round up
-    ALIGN = 15  -> :00 :15 :30 :45; ALIGN = 30  -> :00 :30; ALIGN= 1  -> :00, 0 -> don't round up
+```
+timeheet v0.9.1	http://www.pabloendres.com/tools#timesheet
+usage:  timeheet.py [OPTION...] 
+
+     -h, --help                          display this help
+     -t [token], --api-token=token       Toggl API token
+     -d dirname, --data-dir=dirname      directory where to store results and local database
+     -r value,   --roundup=value         round up precision
+     -a,         --align-time=value      Align the start - end time of each entry
+     -z,         --time-zone=tz          Timezone to use. Format "+HH:MM"
+     -w,         --workspace-id=id       Toogl Worskpace ID
+     -s,         --start=YYYY-MM-DD      Start of the report - default: last month
+     -e,         --end=YYYY-MM-DD        End of the report - default: end of last month
+     -p,         --per-project           create separate CSVs per project under each client
+     -f,         --full                  export all entries to a single full.csv file
+
+
+ROUNDUP = 15  -> :00 :15 :30 :45; ROUNDUP = 30  -> :00 :30; ROUNDUP= 1  -> :00, 0 -> don't round up
+ALIGN = 15  -> :00 :15 :30 :45; ALIGN = 30  -> :00 :30; ALIGN= 1  -> :00, 0 -> don't round up
+```
+
 
 The output should be something like this:
 
@@ -87,11 +92,7 @@ Contributores
 -------------
 
 * [@epablosensei](http://www.pabloendres.com)
-
-Support or Contact
-------------------
-If you have trouble using this code, your can contact info+code@pablo.com.
-
+* [@katalyst666](https://github.com/katalyst666)
 
 
 Bug Reports & Feature Requests
