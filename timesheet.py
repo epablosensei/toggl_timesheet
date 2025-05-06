@@ -17,7 +17,7 @@ from toggltime import timelib
 import dateutil.parser
 
 
-version = "0.9"
+version = "0.9.1"
 url = "http://www.pabloendres.com/tools#timesheet"
 verbose = False
 
@@ -78,8 +78,8 @@ def usage(error_msg=''):
     print "     -w,         --workspace-id=id       Toogl Worskpace ID"
     print "     -s,         --start=YYYY-MM-DD      Start of the report - default: last month"
     print "     -e,         --end=YYYY-MM-DD        End of the report - default: end of last month"
-    print "     -p,         --per-project            create separate CSVs per project under each client"
-    print "     -f,         --full                   export all entries to a single full.csv file"
+    print "     -p,         --per-project           create separate CSVs per project under each client"
+    print "     -f,         --full                  export all entries to a single full.csv file"
 
     print ""
     print ""
@@ -191,6 +191,8 @@ def main():
         tt.roundup()
         table.insert(tt.get_time_entry)
 
+    users = db.query('SELECT DISTINCT(user) FROM timesheet;')
+
     # Get the list of clients
     if not full and not per_project:
         clients = db.query('select distinct(client) from timesheet;')
@@ -202,44 +204,56 @@ def main():
             print_csv(timeheet, start.date(), stop.date(), c['client'])
 
     if per_project:
-        clients = db.query('SELECT DISTINCT(client) FROM timesheet;')
+        clients = list(db.query('SELECT DISTINCT(client) FROM timesheet;'))
 
-        for c in clients:
-            client_name = str(c['client'] or '')
+        # Create a CSV file per per project for each user
+        for u in users:
+            user_name = str(u['user'] or '')
+            # user_name in camel case
+            user_nameCC = u['user'].replace(" ", "_")
+            user_nameCC = user_nameCC.lower()
+            print("Creating CSVs for %s" % user_name)
+        
+            for c in clients:
+                client_name = str(c['client'] or '')
+                print("Working on %s/%s" % (client_name, user_name))
 
-            projects = db.query(
-                "SELECT DISTINCT(project) FROM timesheet WHERE client = :client;",
-                {'client': client_name}
-            )
-
-            for p in projects:
-                project_name = str(p['project'] or '')
-
-                entries = db.query(
-                    "SELECT user, start, MIN(start_time) AS start_time, MAX(stop_time) AS stop_time, "
-                    "SUM(duration_dec) AS duration_dec "
-                    "FROM timesheet WHERE client = :client AND project = :project "
-                    "GROUP BY user, start;",
-                    {'client': client_name, 'project': project_name}
+                projects = db.query(
+                    "SELECT DISTINCT(project) FROM timesheet WHERE client = :client and user = :user;",
+                    {'client': client_name, 'user': user_name}
                 )
 
-                filename = "{}-{}-{}.csv".format(
-                    timelib.year_month_only(start),
-                    client_name,
-                    project_name
-                )
+                for p in projects:
+                    project_name = str(p['project'] or '')
 
-                filepath = os.path.join(config.DATA_DIR, filename)
-                with open(filepath, 'w') as f:
-                    print "Writing " + filepath
-                    writer = csv.writer(f, delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
-                    writer.writerow(("Client:", client_name))
-                    writer.writerow(("Project:", project_name))
-                    writer.writerow(("Period:", "%s - %s" % (start, stop)))
-                    writer.writerow(())
-                    writer.writerow(("consultant", "start date", "start time", "stop date", "stop time", "time (h)", "duration_dec"))
-                    for entry in entries:
-                        writer.writerow((entry['user'], entry['start'], entry['start_time'], '', entry['stop_time'], '', entry['duration_dec']))
+                    entries = db.query(
+                        "SELECT user, start, MIN(start_time) AS start_time, MAX(stop_time) AS stop_time, "
+                        "SUM(duration_dec) AS duration_dec "
+                        "FROM timesheet WHERE client = :client AND project = :project AND user = :user "
+                        "GROUP by start;",
+                        {'client': client_name, 'project': project_name, 'user': user_name}
+                    )
+
+                    filename = "{}-{}-{}-{}.csv".format(
+                        timelib.year_month_only(start),
+                        client_name,
+                        project_name,
+                        user_nameCC
+                    )
+
+                    filepath = os.path.join(config.DATA_DIR, filename)
+                    with open(filepath, 'w') as f:
+                        print "Writing " + filepath
+                        writer = csv.writer(f, delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
+                        writer.writerow(("Client:", client_name))
+                        writer.writerow(("Project:", project_name))
+                        writer.writerow(("Period:", "%s - %s" % (start, stop)))
+                        writer.writerow(("User:", user_name))
+                        writer.writerow((""))
+                        writer.writerow(())
+                        writer.writerow(("consultant", "start date", "start time", "stop date", "stop time", "time (h)", "duration_dec"))
+                        for entry in entries:
+                            writer.writerow((entry['user'], entry['start'], entry['start_time'], '', entry['stop_time'], '', entry['duration_dec']))
     if full:
         full_entries = db.query(
             "SELECT user, start, start_time, stop, stop_time, duration_dec "
