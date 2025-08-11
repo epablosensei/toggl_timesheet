@@ -242,6 +242,7 @@ def main():
                         writer.writerow((entry['user'], entry['start'], entry['start_time'], '', entry['stop_time'], '', entry['duration_dec']))
     if full:
         full_entries = db.query(
+
             "SELECT user, start, MIN(start_time) AS start_time, MAX(stop_time) AS stop_time, SUM(duration_dec) AS duration_dec "
             "FROM timesheet GROUP BY user, start;"
         )
@@ -256,6 +257,7 @@ def main():
             writer.writerow(("consultant", "start date", "start time", "stop date", "stop time", "time (h)", "duration_dec"))
             for entry in full_entries:
                 writer.writerow((entry['user'], entry['start'], entry['start_time'], '', entry['stop_time'], '', entry['duration_dec']))
+
 
 
 
