@@ -16,8 +16,21 @@ CLI tool to export Toggl time entries to CSV timesheets. Fetches time tracking d
 - `python timesheet.py -f` - Export all entries to full.csv
 - `python timesheet.py -h` - Show help
 
-### Development
+### Development Setup (using virtualenv - recommended)
+```bash
+# Create and activate virtual environment
+python -m virtualenv venv
+source venv/bin/activate  # Linux/Mac
+# venv\Scripts\activate   # Windows
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Quick Commands
 - `pip install -r requirements.txt` - Install dependencies
+- `source venv/bin/activate` - Activate virtual environment
+- `deactivate` - Deactivate virtual environment
 
 ### Dangerous Commands (DO NOT run without explicit permission)
 - `python timesheet.py` - Calls Toggl API (uses API quota)
