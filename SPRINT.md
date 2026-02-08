@@ -24,6 +24,10 @@ Goal: Python 3 Migration Planning
 
 - [ ] **[TASK-004]** Update requirements.txt for Python 3
   - Verify all dependencies support Python 3
+  - Apply Dependabot bumps deferred from Python 2.7:
+    - certifi 2022.12.7 → 2024.7.4 (PR #18)
+    - requests 2.20.0 → 2.32.4 (PR #19, CVE-2024-47081)
+  - These versions require Python 3; cannot apply until migration is done
 
 ### Code Quality
 - [ ] **[TASK-005]** Add proper error handling for API failures
