@@ -12,12 +12,21 @@ Installation on linux
 If you are using linux, you most probably have Python already installed on your machine.
 If not, use your distro's package management system to install Python 2.7
 
-* Downloading the source code from [here](https://github.com/epablosensei/toggl_timesheet/archive/master.zip)
-* navaigate to the directory and run the following command to install the required packages :
+* Download the source code from [here](https://github.com/epablosensei/toggl_timesheet/archive/master.zip)
+* Navigate to the directory and create a virtual environment (recommended):
 
+```bash
+# Create virtual environment
+python -m virtualenv venv
+
+# Activate virtual environment
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
 ```
-$ pip install -r requirements.txt
-```
+
+> **Note:** Using a virtual environment keeps dependencies isolated and prevents conflicts with system packages. Always activate the venv before running the tool.
 
 * Copy `config.py-example` to `config.py`
 * In `config.py` 
@@ -32,13 +41,23 @@ Installation on Windows
 * If you don't have Python installed, then you must install Python 2.7 from [here](http://python.org/ftp/python/2.7.5/python-2.7.5.msi)
 * Download the file
 * Press the start button, select run, and run cmd.exe
-* In the command shell, run these commands
+* In the command shell, create a virtual environment (recommended):
 
+```cmd
+# Install virtualenv if needed
+pip install virtualenv
+
+# Create virtual environment
+python -m virtualenv venv
+
+# Activate virtual environment
+venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
 ```
-python distribute_setup.py
-easy_install pip
-pip install python-dateutil requests
-```
+
+> **Note:** Using a virtual environment keeps dependencies isolated and prevents conflicts with system packages. Always activate the venv before running the tool.
 
 * Download toggl_target from [here](https://github.com/epablosensei/toggl_timesheet/archive/master.zip)
 * Expand the downloaded zip file, copy `config.py-example` & paste it as `config.py` beside `run.py`
