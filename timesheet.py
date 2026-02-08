@@ -213,7 +213,7 @@ def main():
             user_nameCC = u['user'].replace(" ", "_")
             user_nameCC = user_nameCC.lower()
             print("Creating CSVs for %s" % user_name)
-        
+
             for c in clients:
                 client_name = str(c['client'] or '')
                 print("Working on %s/%s" % (client_name, user_name))
