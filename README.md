@@ -147,7 +147,10 @@ usage:  timeheet.py [OPTION...]
      -e,         --end=YYYY-MM-DD        End of the report - default: end of last month
      -p,         --per-project           create separate CSVs per project under each client
      -f,         --full                  export all entries to a single full.csv file
+     -m,         --monthly               export daily summary per user to monthly CSV
 
+-f exports every individual time entry (raw data) to a single CSV
+-m exports one row per day per user (daily totals across all clients/projects)
 
 ROUNDUP = 15  -> :00 :15 :30 :45; ROUNDUP = 30  -> :00 :30; ROUNDUP= 1  -> :00, 0 -> don't round up
 ALIGN = 15  -> :00 :15 :30 :45; ALIGN = 30  -> :00 :30; ALIGN= 1  -> :00, 0 -> don't round up

@@ -14,6 +14,7 @@ CLI tool to export Toggl time entries to CSV timesheets. Fetches time tracking d
 - `python timesheet.py -s 2024-01-01 -e 2024-01-31` - Custom date range
 - `python timesheet.py -p` - Generate per-project CSVs
 - `python timesheet.py -f` - Export all entries to full.csv
+- `python timesheet.py -m` - Generate monthly summary CSV per user (daily totals)
 - `python timesheet.py -h` - Show help
 
 ### Development Setup (using virtualenv - recommended)
