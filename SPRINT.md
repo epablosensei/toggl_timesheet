@@ -40,6 +40,12 @@ Goal: Python 3 Migration Planning
 
 ## Completed
 <!-- Completed tasks with dates -->
+- [x] **[TASK-010]** Add --monthly flag for daily summary per user
+  - Completed: 2026-02-08
+  - Branch: feature/monthly-timesheet
+  - Inspired by PR #14 (katalyst666), implemented as new flag instead of changing --full
+  - Produces one CSV per user: `{YYYY-MM}-{user}-monthly.csv`
+
 - [x] **[TASK-009]** Containerize for Podman/Docker (Python 2.7)
   - Completed: 2026-02-08
   - Branch: feature/podman-container
