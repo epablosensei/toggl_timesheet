@@ -15,6 +15,7 @@ Consider creating docs for:
 - **python3-migration.md** - Migration checklist, compatibility notes
 - **csv-format.md** - Expected CSV output format, column definitions
 - **time-rounding.md** - Business rules for time rounding and alignment
+- **container-setup.md** - Containerfile details, Python 2.7 dependency pins, SELinux notes
 
 ## Tips
 

@@ -36,6 +36,13 @@ Goal: Python 3 Migration Planning
 
 ## Completed
 <!-- Completed tasks with dates -->
+- [x] **[TASK-009]** Containerize for Podman/Docker (Python 2.7)
+  - Completed: 2026-02-08
+  - Branch: feature/podman-container
+  - Containerfile (python:2.7-slim), requirements-container.txt, run-timesheet.sh
+  - Environment variable support in config.py-example
+  - SELinux-compatible volume mounts (:z flag)
+
 - [x] **[CHORE-001]** Add Claude Code configuration
   - Completed: 2026-01-21
   - Branch: claudify-repo
