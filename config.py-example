@@ -1,20 +1,21 @@
+import os
+
 # Diretory where to look for and write the data
-DATA_DIR = 'data'
+DATA_DIR = os.environ.get('TOGGL_DATA_DIR', 'data')
 
 # Toggl API Token
-API_TOKEN             = 'ADD YOUR API TOKEN HERE'
-
+API_TOKEN = os.environ.get('TOGGL_API_TOKEN', 'ADD YOUR API TOKEN HERE')
 
 # Worksheetid
-WORKSPACE_ID = 'ADD YOUR WORKSPACE_ID TOKEN HERE'
+WORKSPACE_ID = os.environ.get('TOGGL_WORKSPACE_ID', 'ADD YOUR WORKSPACE_ID HERE')
 
 # Timezone
-TIMEZONE = '+02:00'
+TIMEZONE = os.environ.get('TOGGL_TIMEZONE', '+02:00')
 
 # Roundup
 # Rounding adjusts the duration of each entry
 # ROUNDUP = 15  -> :00 :15 :30 :45; ROUNDUP = 30  -> :00 :30; ROUNDUP= 1  -> :00, 0 -> don't round up
-ROUNDUP = 15
+ROUNDUP = int(os.environ.get('TOGGL_ROUNDUP', 15))
 
 # Align time
 # This is used to align the start - end time of each entry and with it the duration
@@ -23,7 +24,4 @@ ROUNDUP = 15
 # ALIGN_TIME = 1  -> :00
 # ALIGN_TIME = 0 don't align
 # Example: start 7:20 - end 8:20 and ALIGN_TIME = 15  will be adjusted to: start 7:15 - end 8:30
-ALIGN_TIME = 15
-
-
-
+ALIGN_TIME = int(os.environ.get('TOGGL_ALIGN_TIME', 15))
