@@ -27,6 +27,22 @@ source venv/bin/activate  # Linux/Mac
 pip install -r requirements.txt
 ```
 
+### Container Usage (Podman/Docker)
+```bash
+# Build image
+podman build -t toggl-timesheet .
+
+# Run with convenience script (auto-detects podman/docker)
+./run-timesheet.sh -h
+./run-timesheet.sh -s 2024-01-01 -e 2024-01-31
+
+# Run manually with mounted config
+podman run --rm -v ./config.py:/app/config.py:ro -v ./data:/app/data toggl-timesheet -h
+
+# Run with environment variables
+podman run --rm -e TOGGL_API_TOKEN=xxx -e TOGGL_WORKSPACE_ID=yyy -v ./data:/app/data toggl-timesheet -h
+```
+
 ### Quick Commands
 - `pip install -r requirements.txt` - Install dependencies
 - `source venv/bin/activate` - Activate virtual environment
@@ -34,6 +50,7 @@ pip install -r requirements.txt
 
 ### Dangerous Commands (DO NOT run without explicit permission)
 - `python timesheet.py` - Calls Toggl API (uses API quota)
+- `./run-timesheet.sh` (without `-h`) - Calls Toggl API via container
 - Any modifications to `config.py` - Contains API credentials
 
 ## Architecture

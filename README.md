@@ -6,6 +6,68 @@ so I adapted this small little project from [toggl_target](https://github.com/mo
 
 It started with some tweeks, but by this version mainly the inspiration and the toggleapi.TogglAPI remain.
 
+Container Usage (Podman/Docker)
+-------------------------------
+
+Run toggl_timesheet in a container without installing Python 2.7 on your host.
+
+### Quick Start
+
+```bash
+# Build the image
+podman build -t toggl-timesheet .
+# or: docker build -t toggl-timesheet .
+
+# Show help (no API call)
+podman run --rm toggl-timesheet -h
+```
+
+### Using the Convenience Script
+
+The `run-timesheet.sh` script auto-detects podman/docker and handles mounts:
+
+```bash
+# Show help
+./run-timesheet.sh -h
+
+# Generate timesheet for a date range
+./run-timesheet.sh -s 2024-01-01 -e 2024-01-31
+
+# Generate per-project CSVs
+./run-timesheet.sh -s 2024-01-01 -e 2024-01-31 -p
+```
+
+### Manual Run
+
+```bash
+# Run with a mounted config.py (recommended)
+# Note: :z flag needed for SELinux (Fedora/RHEL); safe to use elsewhere
+podman run --rm \
+    -v ./config.py:/app/config.py:ro,z \
+    -v ./data:/app/data:z \
+    toggl-timesheet -s 2024-01-01 -e 2024-01-31
+
+# Run with environment variables instead
+podman run --rm \
+    -e TOGGL_API_TOKEN=your_token \
+    -e TOGGL_WORKSPACE_ID=your_workspace_id \
+    -v ./data:/app/data:z \
+    toggl-timesheet -s 2024-01-01 -e 2024-01-31
+```
+
+### Environment Variables
+
+When running in a container, you can configure via environment variables instead of `config.py`:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `TOGGL_API_TOKEN` | Toggl API token | _(required)_ |
+| `TOGGL_WORKSPACE_ID` | Toggl workspace ID | _(required)_ |
+| `TOGGL_TIMEZONE` | Timezone offset | `+02:00` |
+| `TOGGL_ROUNDUP` | Rounding precision (minutes) | `15` |
+| `TOGGL_ALIGN_TIME` | Time alignment (minutes) | `15` |
+| `TOGGL_DATA_DIR` | Data directory inside container | `data` |
+
 Installation on linux
 ---------------------
 
