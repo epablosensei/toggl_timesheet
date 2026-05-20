@@ -45,18 +45,14 @@ def print_csv(entry_list, start='', stop='', client='No_client'):
 
     filename = config.DATA_DIR + "/" + timelib.year_month_only(start) + '-' + client + ".csv"
     with open(filename, 'w') as f:
-        try:
-            print("writing " + filename)
-            writer = csv.writer(f, delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
-            writer.writerow(("Client: ", client))
-            writer.writerow(("Period: ", "%s - %s" % (start, stop)))
-            writer.writerow((""))
-
-            writer.writerow(("consultant", "start date", "start time", "stop date", "stop time", "time (h)", "duration_dec"))
-            for entry in entry_list:
-                writer.writerow((entry['user'], entry['start'], entry['start_time'], '', entry['stop_time'], '', entry['duration_dec']))
-        finally:
-            f.close()
+        print("writing " + filename)
+        writer = csv.writer(f, delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
+        writer.writerow(("Client: ", client))
+        writer.writerow(("Period: ", "%s - %s" % (start, stop)))
+        writer.writerow((""))
+        writer.writerow(("consultant", "start date", "start time", "stop date", "stop time", "time (h)", "duration_dec"))
+        for entry in entry_list:
+            writer.writerow((entry['user'], entry['start'], entry['start_time'], '', entry['stop_time'], '', entry['duration_dec']))
 
 
 def usage(error_msg=''):
@@ -159,24 +155,30 @@ def main():
     try:
         print("Getting reports for entries between %s and %s\n" % (start, stop))
         time_entries = r.get_detailed_report(start, stop)
-    except Exception as e:
-        print("OMG! Toggle request failed for some mysterious reason!")
-        print(str(e))
-        sys.exc_info()[0]
-        sys.exit()
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 401:
+            print("Authentication failed — check your API token in config.py")
+        elif e.response.status_code == 429:
+            print("Toggl API rate limit reached — try again in a few seconds")
+        else:
+            print("Toggl API error: %s" % e)
+        sys.exit(1)
+    except requests.exceptions.Timeout:
+        print("Toggl API request timed out — check your connection and try again")
+        sys.exit(1)
+    except requests.exceptions.RequestException as e:
+        print("Toggl API request failed: %s" % e)
+        sys.exit(1)
 
     # connecting to a SQLite database
     db_name = config.DATA_DIR + "/" + start.strftime("%Y-%m") + ".db"
     db_name_old = db_name + ".old"
 
-    # Check if the db file already exists
+    # Rotate the db: move any existing db to .old before creating a fresh one
     if os.path.exists(db_name):
+        if os.path.exists(db_name_old):
+            os.remove(db_name_old)
         os.rename(db_name, db_name_old)
-    elif os.path.exists(db_name) and os.path.exists(db_name_old):
-        print("Deleting %s and renaming %s as %s." % (db_name_old, db_name, db_name_old))
-        os.rename(db_name, db_name_old)
-    else:
-        print("Sorry, I can not remove %s file." % db_name)
 
     db = dataset.connect("sqlite:///" + db_name)
 

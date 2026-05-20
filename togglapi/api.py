@@ -51,13 +51,17 @@ class ReportAPI(object):
         """Performs the actual call to Report API"""
 
         headers = {'content-type': 'application/json'}
+        auth = HTTPBasicAuth(self.api_token, 'api_token')
 
         if method == 'GET':
-            return requests.get(url, headers=headers, auth=HTTPBasicAuth(self.api_token, 'api_token'))
+            r = requests.get(url, headers=headers, auth=auth, timeout=30)
         elif method == 'POST':
-            return requests.post(url, headers=headers, auth=HTTPBasicAuth(self.api_token, 'api_token'))
+            r = requests.post(url, headers=headers, auth=auth, timeout=30)
         else:
             raise ValueError('Undefined HTTP method "{}"'.format(method))
+
+        r.raise_for_status()
+        return r
 
     ## Detailed Report section
     def get_detailed_report(self, since='', until='', workspace_id='', rounding='off', per_page=50):
