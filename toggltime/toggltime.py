@@ -5,6 +5,7 @@
 
 from __future__ import division
 from datetime import timedelta
+import math
 
 import dateutil.parser
 
@@ -115,7 +116,7 @@ class Toggletime(object):
             elif 30 < self.stop.minute <= 45:
                 self.stop = self.stop.replace(minute=45, second=0)
             elif 45 < self.stop.minute <= 59:
-                print self.stop
+                print(self.stop)
                 self.stop = self.stop.replace(hour=self.stop.hour + 1, minute=0, second=0)
         elif self.ALIGN_TIME == 30:
             if 0 < self.stop.minute <= 30:
@@ -173,15 +174,18 @@ class Toggletime(object):
         """
         self.time_entry['start'] = self.start.date().isoformat()
         self.time_entry['stop'] = self.stop.date().isoformat()
-	self.time_entry['duration_dec'] = self.duration_dec
+        self.time_entry['duration_dec'] = self.duration_dec
         return self.time_entry
 
     def roundup(self):
-        # TODO: complete roundup
-
-        # def myround(x, base=5):
-        #     return int(base * round(float(x)/base))
-        True
+        if not self.ROUNDUP:
+            return
+        interval_minutes = 60 if int(self.ROUNDUP) == 1 else int(self.ROUNDUP)
+        interval_sec = interval_minutes * 60
+        self.duration = math.ceil(self.duration / interval_sec) * interval_sec
+        self.stop = self.start + timedelta(seconds=self.duration)
+        self.duration_dec = self.sec_to_hours_dec(self.duration)
+        self.update_time_entry()
 
 
 if __name__ == '__main__':
@@ -189,22 +193,22 @@ if __name__ == '__main__':
 
     doctest.testmod()
 
-    print "TogglAPI - test"
+    print("TogglAPI - test")
     tt = Toggletime({u'duronly': False, u'wid': 507341, u'description': u'Test entry', \
                      u'stop': u'2015-03-18T16:55:00+00:00', u'duration': 4500, u'pid': 5503294, \
                      u'start': u'2015-03-18T15:35:00+00:00', u'at': u'2015-03-18T16:48:04+00:00', \
                      u'billable': False, u'tid': 3399821, u'id': 210886825, u'uid': 676699})
     tt.ALIGN_TIME = 15
-    print tt.start, tt.stop, tt.duration, tt.ROUNDUP, tt.ALIGN_TIME
-    print tt.duration_dec, tt.stop - tt.start
+    print(tt.start, tt.stop, tt.duration, tt.ROUNDUP, tt.ALIGN_TIME)
+    print(tt.duration_dec, tt.stop - tt.start)
     tt.align_start_stop()
-    print tt.start, tt.stop, tt.duration, tt.duration_dec, tt.ALIGN_TIME
-    print tt.duration_dec, tt.stop - tt.start
+    print(tt.start, tt.stop, tt.duration, tt.duration_dec, tt.ALIGN_TIME)
+    print(tt.duration_dec, tt.stop - tt.start)
     tt.update_time_entry()
-    print tt.get_time_entry
+    print(tt.get_time_entry)
 
-    print ""
-    print "ReportAPI - test"
+    print("")
+    print("ReportAPI - test")
     tt = Toggletime({u'updated': u'2015-03-02T10:02:59+01:00', u'task': u'Other', u'end': u'2015-03-02T09:00:10+01:00', \
                      u'description': u'Other', u'project_color': u'13', u'tags': '', u'is_billable': True, \
                      u'pid': 5503294, u'cur': u'EUR', u'project': u'Proy1', u'start': u'2015-03-02T07:17:00+01:00', \
@@ -212,12 +216,12 @@ if __name__ == '__main__':
                      u'project_hex_color': u'#bc2d07', u'dur': 7200000, u'use_stop': True, u'id': 205009936,
                      u'uid': 676699})
     tt.ALIGN_TIME = 15
-    print tt.start, tt.stop, tt.duration, tt.ROUNDUP, tt.ALIGN_TIME
-    print tt.duration_dec, tt.stop - tt.start
+    print(tt.start, tt.stop, tt.duration, tt.ROUNDUP, tt.ALIGN_TIME)
+    print(tt.duration_dec, tt.stop - tt.start)
     tt.align_start_stop()
-    print tt.start, tt.stop, tt.duration, tt.duration_dec, tt.ALIGN_TIME
-    print tt.duration_dec, tt.stop - tt.start
+    print(tt.start, tt.stop, tt.duration, tt.duration_dec, tt.ALIGN_TIME)
+    print(tt.duration_dec, tt.stop - tt.start)
     tt.update_time_entry()
-    print tt.get_time_entry
+    print(tt.get_time_entry)
 
 

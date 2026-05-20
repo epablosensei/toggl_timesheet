@@ -31,7 +31,11 @@ Goal: Python 3 Migration Planning
 - [ ] **[TASK-007]** Add type hints (after Python 3 migration)
 
 ### Features
-- [ ] **[TASK-008]** Consider adding XLS export option
+- [ ] **[TASK-008]** Review and integrate `--full` aggregation fix
+  - Branch: kat/full-aggregation
+  - Notes: Aggregates entries by day (GROUP BY user, start with MIN/MAX/SUM) instead of listing each entry individually; currently used in production by Kat; conflicts with upstream approach — decision needed
+
+- [ ] **[TASK-009]** Consider adding XLS export option
   - Branch exists: feature/xls_print
 
 ## Completed
