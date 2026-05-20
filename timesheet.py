@@ -256,8 +256,9 @@ def main():
                             writer.writerow((entry['user'], entry['start'], entry['start_time'], '', entry['stop_time'], '', entry['duration_dec']))
     if full:
         full_entries = db.query(
-            "SELECT user, start, start_time, stop, stop_time, duration_dec "
-            "FROM timesheet ORDER BY user, start;"
+            "SELECT user, start, MIN(start_time) AS start_time, MAX(stop_time) AS stop_time, "
+            "SUM(duration_dec) AS duration_dec "
+            "FROM timesheet GROUP BY user, start;"
         )
         filename = os.path.join(config.DATA_DIR, timelib.year_month_only(start) + "-full.csv")
         with open(filename, 'w') as f:
@@ -265,7 +266,7 @@ def main():
             writer = csv.writer(f, delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
             writer.writerow(("consultant", "start date", "start time", "stop date", "stop time", "time (h)", "duration_dec"))
             for entry in full_entries:
-                writer.writerow((entry['user'], entry['start'], entry['start_time'], entry['stop'], entry['stop_time'], entry['duration_dec']))
+                writer.writerow((entry['user'], entry['start'], entry['start_time'], '', entry['stop_time'], '', entry['duration_dec']))
 
 
 
