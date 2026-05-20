@@ -15,13 +15,13 @@ class ReportAPI(object):
         https://github.com/toggl/toggl_api_docs/blob/master/reports.md
     """
 
-    def __init__(self, api_token, timezone, workspace_id):
+    def __init__(self, api_token: str, timezone: str, workspace_id: str) -> None:
         self.api_token = api_token
         self.timezone = timezone
         self.worksheet_id = workspace_id
 
 
-    def _make_url(self, section='details', params={}):
+    def _make_url(self, section: str = 'details', params: dict = {}):
         """Constructs and returns an api url to call with the section of the API to be called
         and parameters defined by key/pair values in the params dict.
 
@@ -47,7 +47,7 @@ class ReportAPI(object):
             url = url + '?{}'.format(urlencode(params))
         return url
 
-    def _query(self, url, method):
+    def _query(self, url: str, method: str) -> requests.Response:
         """Performs the actual call to Report API"""
 
         headers = {'content-type': 'application/json'}
@@ -64,7 +64,7 @@ class ReportAPI(object):
         return r
 
     ## Detailed Report section
-    def get_detailed_report(self, since='', until='', workspace_id='', rounding='off', per_page=50):
+    def get_detailed_report(self, since: str = '', until: str = '', workspace_id: str = '', rounding: str = 'off', per_page: int = 50) -> list:
         """Get a detailed report """
 
         data_list = []

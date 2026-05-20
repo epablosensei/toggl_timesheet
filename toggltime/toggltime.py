@@ -4,8 +4,9 @@
 
 
 from __future__ import division
-from datetime import timedelta
+from datetime import datetime, timedelta
 import math
+from typing import Any
 
 import dateutil.parser
 
@@ -15,7 +16,7 @@ class Toggletime(object):
         This should work with both items from the TogglAPI and the ReportAPI
     """
 
-    def __init__(self, time_entry, roundup=0, align_time=0):
+    def __init__(self, time_entry: dict, roundup: int = 0, align_time: int = 0) -> None:
         """
         :param time_entry:
         :param roundup:
@@ -60,7 +61,7 @@ class Toggletime(object):
             self.time_entry['stop_time'] = self.stop.time().isoformat()
             self.time_entry['duration_dec'] = self.duration_dec
 
-    def align_start(self):
+    def align_start(self) -> None:
         """
         Align the startup time
             self.ALIGN_TIME = 15  -> :00 :15 :30 :45
@@ -95,7 +96,7 @@ class Toggletime(object):
             elif 6 <= self.start.minute <= 59:
                 self.start = self.start.replace(hour=self.start.hour + 1, minute=0, second=0)
 
-    def align_stop(self):
+    def align_stop(self) -> None:
         """
         Align the finish time
             self.ALIGN_TIME = 15  -> :00 :15 :30 :45
@@ -129,16 +130,15 @@ class Toggletime(object):
             elif 5 < self.stop.minute <= 59:
                 self.stop = self.stop.replace(hour=self.stop.hour + 1, minute=0, second=0)
 
-    def calculate_duration(self):
+    def calculate_duration(self) -> None:
         """
         Calculate the duration: stop - start
         :return:
         """
-        self.duration = self.stop - self.start
-        self.duration = self.duration.total_seconds()
+        self.duration = (self.stop - self.start).total_seconds()
         self.duration_dec = self.sec_to_hours_dec(self.duration)
 
-    def align_start_stop(self):
+    def align_start_stop(self) -> None:
         """
 
         :return:
@@ -148,13 +148,13 @@ class Toggletime(object):
         self.calculate_duration()
         self.update_time_entry()
 
-    def sec_to_hours_dec(self, time_sec):
+    def sec_to_hours_dec(self, time_sec: float) -> float:
         """
         :return: time in hours
         """
         return time_sec / 60 / 60
 
-    def update_time_entry(self):
+    def update_time_entry(self) -> None:
         """
         Update the dictionary
         :return:
@@ -167,7 +167,7 @@ class Toggletime(object):
         self.time_entry['stop_time'] = self.stop.time().isoformat()
 
     @property
-    def get_time_entry(self):
+    def get_time_entry(self) -> dict:
         """
 
         :return: time_entry
@@ -177,7 +177,7 @@ class Toggletime(object):
         self.time_entry['duration_dec'] = self.duration_dec
         return self.time_entry
 
-    def roundup(self):
+    def roundup(self) -> None:
         if not self.ROUNDUP:
             return
         interval_minutes = int(self.ROUNDUP)

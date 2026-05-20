@@ -8,31 +8,31 @@ from dateutil.relativedelta import relativedelta
 from datetime import datetime
 
 
-def now():
+def now() -> datetime:
     return datetime.now() + relativedelta(microsecond=0)
 
 
-def month_start(start=datetime.now()):
+def month_start(start: datetime = datetime.now()) -> datetime:
     return start + relativedelta(day=1, hour=0, minute=0, second=0, microsecond=0)
 
 
-def month_end(end=datetime.now()):
+def month_end(end: datetime = datetime.now()) -> datetime:
     return end + relativedelta(day=31, hour=11, minute=59, second=59, microsecond=0)
 
 
-def today():
+def today() -> datetime:
     return datetime.now() + relativedelta(hour=0, minute=0, second=0, microsecond=0)
 
 
-def last_month_start(start=datetime.now()):
+def last_month_start(start: datetime = datetime.now()) -> datetime:
     return start + relativedelta(months=-1, day=1, hour=0, minute=0, second=0, microsecond=0)
 
 
-def last_month_end(end=datetime.now()):
+def last_month_end(end: datetime = datetime.now()) -> datetime:
     return end + relativedelta(months=-1, day=31, hour=11, minute=59, second=59, microsecond=0)
 
 
-def year_month_only(start=datetime.now()):
+def year_month_only(start: datetime = datetime.now()) -> str:
     tmp = start + relativedelta(day=1, hour=0, minute=0, second=0, microsecond=0)
     return tmp.strftime("%Y-%m")
 

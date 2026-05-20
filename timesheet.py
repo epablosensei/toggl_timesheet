@@ -22,7 +22,7 @@ url = "http://www.pabloendres.com/tools#timesheet"
 verbose = False
 
 
-def internet_on():
+def internet_on() -> bool:
     """Checks if internet connection is on by connecting to Google"""
     try:
         requests.get('http://www.google.com', timeout=10)
@@ -33,7 +33,7 @@ def internet_on():
         return False
 
 
-def print_csv(entry_list, start='', stop='', client='No_client'):
+def print_csv(entry_list, start: str = '', stop: str = '', client: str = 'No_client') -> None:
     """
 
     :param entry_list, start='', stop='', client='No client',
@@ -55,7 +55,7 @@ def print_csv(entry_list, start='', stop='', client='No_client'):
             writer.writerow((entry['user'], entry['start'], entry['start_time'], '', entry['stop_time'], '', entry['duration_dec']))
 
 
-def usage(error_msg=''):
+def usage(error_msg: str = '') -> None:
     """ Show usage options """
 
     global version
