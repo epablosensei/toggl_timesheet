@@ -4,7 +4,7 @@
 #@author Mosab Ahmad <mosab.ahmad@gmail.com> - TogglAPI
 
 
-from urllib import urlencode
+from urllib.parse import urlencode
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -150,7 +150,7 @@ class ReportAPI(object):
         total_count = res['total_count']
         per_page = res['per_page']
         data_list = data_list + res['data']
-        print "Total entries: " + str(total_count)
+        print("Total entries: " + str(total_count))
 
         # Calculate how many pages we have to get
         if total_count % per_page != 0:

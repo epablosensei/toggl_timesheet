@@ -46,7 +46,7 @@ def print_csv(entry_list, start='', stop='', client='No_client'):
     filename = config.DATA_DIR + "/" + timelib.year_month_only(start) + '-' + client + ".csv"
     with open(filename, 'w') as f:
         try:
-            print "writing " + filename
+            print("writing " + filename)
             writer = csv.writer(f, delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
             writer.writerow(("Client: ", client))
             writer.writerow(("Period: ", "%s - %s" % (start, stop)))
@@ -65,27 +65,27 @@ def usage(error_msg=''):
     global version
     global url
 
-    print error_msg
-    print ""
-    print "timeheet v" + version + "\t" + url
-    print "usage:  timeheet.py [OPTION...] \n"
-    print "     -h, --help                          display this help"
-    print "     -t [token], --api-token=token       Toggl API token"
-    print "     -d dirname, --data-dir=dirname      directory where to store results and local database"
-    print "     -r value,   --roundup=value         round up precision"
-    print "     -a,         --align-time=value      Align the start - end time of each entry"
-    print "     -z,         --time-zone=tz          Timezone to use. Format \"+HH:MM\""
-    print "     -w,         --workspace-id=id       Toogl Worskpace ID"
-    print "     -s,         --start=YYYY-MM-DD      Start of the report - default: last month"
-    print "     -e,         --end=YYYY-MM-DD        End of the report - default: end of last month"
-    print "     -p,         --per-project           create separate CSVs per project under each client"
-    print "     -f,         --full                  export all entries to a single full.csv file"
+    print(error_msg)
+    print("")
+    print("timeheet v" + version + "\t" + url)
+    print("usage:  timeheet.py [OPTION...] \n")
+    print("     -h, --help                          display this help")
+    print("     -t [token], --api-token=token       Toggl API token")
+    print("     -d dirname, --data-dir=dirname      directory where to store results and local database")
+    print("     -r value,   --roundup=value         round up precision")
+    print("     -a,         --align-time=value      Align the start - end time of each entry")
+    print("     -z,         --time-zone=tz          Timezone to use. Format \"+HH:MM\"")
+    print("     -w,         --workspace-id=id       Toogl Worskpace ID")
+    print("     -s,         --start=YYYY-MM-DD      Start of the report - default: last month")
+    print("     -e,         --end=YYYY-MM-DD        End of the report - default: end of last month")
+    print("     -p,         --per-project           create separate CSVs per project under each client")
+    print("     -f,         --full                  export all entries to a single full.csv file")
 
-    print ""
-    print ""
-    print "ROUNDUP = 15  -> :00 :15 :30 :45; ROUNDUP = 30  -> :00 :30; ROUNDUP= 1  -> :00, 0 -> don't round up"
-    print "ALIGN = 15  -> :00 :15 :30 :45; ALIGN = 30  -> :00 :30; ALIGN= 1  -> :00, 0 -> don't round up"
-    print ""
+    print("")
+    print("")
+    print("ROUNDUP = 15  -> :00 :15 :30 :45; ROUNDUP = 30  -> :00 :30; ROUNDUP= 1  -> :00, 0 -> don't round up")
+    print("ALIGN = 15  -> :00 :15 :30 :45; ALIGN = 30  -> :00 :30; ALIGN= 1  -> :00, 0 -> don't round up")
+    print("")
     exit()
 
 
@@ -107,7 +107,7 @@ def main():
             sys.argv[1:], "hd:r:a:t:z:w:s:e:pf",
             ["help", "api-token=", "data-dir=", "roundup=", "align-time=", "time-zone=", \
              "workspace-id=", "start=", "end=", "per-project", "full"])
-    except getopt.GetoptError, e:
+    except getopt.GetoptError as e:
         usage(e.msg)
 
     for o, arg in opts:
@@ -150,18 +150,18 @@ def main():
 
     r = api.ReportAPI(config.API_TOKEN, config.TIMEZONE, config.WORKSPACE_ID)
 
-    print "Hi"
-    print "Checking Internet connectivity..."
+    print("Hi")
+    print("Checking Internet connectivity...")
     if not internet_on():
-        print "OMG! There is no internet connection!"
+        print("OMG! There is no internet connection!")
         sys.exit()
-    print "\nTrying to connect to Toggl, hang on!\n"
+    print("\nTrying to connect to Toggl, hang on!\n")
     try:
-        print ("Getting reports for entries between %s and %s\n" % (start, stop))
+        print("Getting reports for entries between %s and %s\n" % (start, stop))
         time_entries = r.get_detailed_report(start, stop)
     except Exception as e:
-        print "OMG! Toggle request failed for some mysterious reason!"
-        print e.message
+        print("OMG! Toggle request failed for some mysterious reason!")
+        print(str(e))
         sys.exc_info()[0]
         sys.exit()
 
@@ -243,7 +243,7 @@ def main():
 
                     filepath = os.path.join(config.DATA_DIR, filename)
                     with open(filepath, 'w') as f:
-                        print "Writing " + filepath
+                        print("Writing " + filepath)
                         writer = csv.writer(f, delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
                         writer.writerow(("Client:", client_name))
                         writer.writerow(("Project:", project_name))
@@ -261,7 +261,7 @@ def main():
         )
         filename = os.path.join(config.DATA_DIR, timelib.year_month_only(start) + "-full.csv")
         with open(filename, 'w') as f:
-            print "Writing " + filename
+            print("Writing " + filename)
             writer = csv.writer(f, delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
             writer.writerow(("consultant", "start date", "start time", "stop date", "stop time", "time (h)", "duration_dec"))
             for entry in full_entries:

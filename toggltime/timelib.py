@@ -39,11 +39,11 @@ def year_month_only(start=datetime.now()):
 if __name__ == '__main__':
     import dateutil.parser
 
-    print last_month_start().date()
-    print last_month_end().date()
+    print(last_month_start().date())
+    print(last_month_end().date())
     start = dateutil.parser.parse('2015-03-15').date()
-    print start
-    print year_month_only()
+    print(start)
+    print(year_month_only())
 
     import doctest
 

@@ -2,28 +2,29 @@
 
 ## Current Sprint
 Started: 2026-01-21
-Goal: Python 3 Migration Planning
+Goal: Full Python 3 Migration (clean port — no Python 2 compatibility maintained)
 
 ## In Progress
-<!-- Tasks currently being worked on -->
+- **[TASK-002]** Fix all Python 2 syntax across all files
 
 ## Backlog (Prioritized)
 
 ### Python 3 Migration
-- [ ] **[TASK-001]** Complete roundup function implementation
-  - File: toggltime/toggltime.py:180
-  - Notes: TODO comment exists, function is incomplete
+- [ ] **[TASK-002]** Fix all Python 2 syntax across all files
+  - Print statements → `print()` in timesheet.py, togglapi/api.py, toggltime/timelib.py
+  - `except X, e:` → `except X as e:` in timesheet.py
+  - `e.message` → `str(e)` in timesheet.py
+  - `from urllib import urlencode` → `from urllib.parse import urlencode` in togglapi/api.py
 
-- [ ] **[TASK-002]** Audit Python 2/3 compatibility issues
-  - Check print statements (need parentheses)
-  - Check urllib imports (urllib vs urllib.parse)
-  - Check string handling (unicode)
+- [ ] **[TASK-003]** Update requirements.txt for Python 3
+  - Update dataset, SQLAlchemy, alembic to current versions
+  - Remove `six` (Python 2/3 bridge, not needed in Python 3)
+  - Verify all dependencies install and work under Python 3
 
-- [ ] **[TASK-003]** Add `from __future__ import` statements
-  - print_function, division, unicode_literals
-
-- [ ] **[TASK-004]** Update requirements.txt for Python 3
-  - Verify all dependencies support Python 3
+- [ ] **[TASK-004]** Verify Toggl API compatibility
+  - Confirm Reports API v2 (`api.track.toggl.com/reports/api/v2`) still responds
+  - TogglAPI class uses deprecated v8 (`www.toggl.com/api/v8`) — assess if used and whether to update to v9 or remove
+  - Update API endpoints if needed
 
 ### Code Quality
 - [ ] **[TASK-005]** Add proper error handling for API failures
@@ -39,10 +40,13 @@ Goal: Python 3 Migration Planning
   - Branch exists: feature/xls_print
 
 ## Completed
-<!-- Completed tasks with dates -->
 - [x] **[CHORE-001]** Add Claude Code configuration
   - Completed: 2026-01-21
   - Branch: claudify-repo
+
+- [x] **[TASK-001]** Complete roundup function implementation
+  - Completed: 2026-05-20
+  - Branch: feature/python3-migration
 
 ## Blocked
 <!-- Tasks waiting on external dependencies -->
