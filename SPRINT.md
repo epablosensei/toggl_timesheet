@@ -6,13 +6,11 @@ Goal: Full Python 3 Migration (clean port — no Python 2 compatibility maintain
 
 ## Backlog (Prioritized)
 
-### Type correctness
-- [ ] **[TASK-011]** Fix type errors revealed by mypy
-  - [ ] Guard `e.response` before accessing `.status_code` in HTTPError handler
-  - [ ] Cast `ROUNDUP` / `ALIGN_TIME` CLI args to `int` (config expects `int`, getopt gives `str`)
-  - [ ] Fix `get_detailed_report` signature to accept `datetime | str` (callers pass datetime)
-  - [ ] Fix `print_csv` + `year_month_only` to accept `date | datetime` (called with `start.date()`)
-  - [ ] Add `data_list` type annotation in `api.py`
+### Housekeeping
+- [ ] **[CHORE-003]** Update CLAUDE.md to reflect Python 3 (currently still says Python 2.7)
+- [ ] **[CHORE-004]** Resolve remaining Pylance red marks — `dataset` has no type stubs so
+  Pylance flags all query row access even in basic mode; options: write a stub, switch to
+  a typed ORM, or suppress per-file
 
 ### API
 - [ ] **[TASK-010]** Migrate to Reports API v3 when available
@@ -63,6 +61,13 @@ Goal: Full Python 3 Migration (clean port — no Python 2 compatibility maintain
 - [x] **[TASK-007]** Add type hints across all modules
   - Completed: 2026-05-20
   - Branch: feature/python3-migration
+
+- [x] **[TASK-011]** Fix type errors revealed by mypy
+  - Completed: 2026-05-20
+  - Branch: feature/python3-migration
+  - Guarded `e.response` before `.status_code`; cast ROUNDUP/ALIGN_TIME CLI args to `int`
+  - Fixed `get_detailed_report` to accept `datetime | str`; `year_month_only` to accept `date | datetime`
+  - mypy and pyright CLI both clean; Pylance red marks from `dataset` stubs tracked in CHORE-004
 
 - [x] **[CHORE-002]** Repo audit and cleanup
   - Completed: 2026-05-20
