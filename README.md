@@ -5,19 +5,23 @@ I use Toggl (www.toggl.com) to track time for my consulting work and some client
 so I adapted this small little project from [toggl_target](https://github.com/mos3abof/toggl_target) to fit my needs.
 
 It started with some tweeks, but by this version mainly the inspiration and the toggleapi.TogglAPI remain.
+_____________________
+
+Ported to Python 3 by [Kat Leese](https://github.com/katalyst666).
+
 
 Installation on linux
 ---------------------
 
-If you are using linux, you most probably have Python already installed on your machine.
-If not, use your distro's package management system to install Python 2.7
+If you are using linux, you most probably have Python 3 already installed on your machine.
+If not, use your distro's package management system to install Python 3.
 
 * Download the source code from [here](https://github.com/epablosensei/toggl_timesheet/archive/master.zip)
 * Navigate to the directory and create a virtual environment (recommended):
 
 ```bash
 # Create virtual environment
-python -m virtualenv venv
+python3 -m venv venv
 
 # Activate virtual environment
 source venv/bin/activate
@@ -38,17 +42,14 @@ pip install -r requirements.txt
 Installation on Windows
 -----------------------
 
-* If you don't have Python installed, then you must install Python 2.7 from [here](http://python.org/ftp/python/2.7.5/python-2.7.5.msi)
+* If you don't have Python installed, then you must install Python 3 from [python.org](https://www.python.org/downloads/)
 * Download the file
 * Press the start button, select run, and run cmd.exe
 * In the command shell, create a virtual environment (recommended):
 
 ```cmd
-# Install virtualenv if needed
-pip install virtualenv
-
 # Create virtual environment
-python -m virtualenv venv
+python -m venv venv
 
 # Activate virtual environment
 venv\Scripts\activate
@@ -60,7 +61,7 @@ pip install -r requirements.txt
 > **Note:** Using a virtual environment keeps dependencies isolated and prevents conflicts with system packages. Always activate the venv before running the tool.
 
 * Download toggl_target from [here](https://github.com/epablosensei/toggl_timesheet/archive/master.zip)
-* Expand the downloaded zip file, copy `config.py-example` & paste it as `config.py` beside `run.py`
+* Expand the downloaded zip file, copy `config.py-example` & paste it as `config.py` beside `timesheet.py`
 * In `config.py` 
 ** add your Toggl  API token which can be found in your Toggl account's settings.
 ** add your workspace_id which can be found in your Toggl account's settings.
