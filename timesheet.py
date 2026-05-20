@@ -220,7 +220,7 @@ def main():
 
                 projects = db.query(
                     "SELECT DISTINCT(project) FROM timesheet WHERE client = :client and user = :user;",
-                    {'client': client_name, 'user': user_name}
+                    client=client_name, user=user_name
                 )
 
                 for p in projects:
@@ -231,7 +231,7 @@ def main():
                         "SUM(duration_dec) AS duration_dec "
                         "FROM timesheet WHERE client = :client AND project = :project AND user = :user "
                         "GROUP by start;",
-                        {'client': client_name, 'project': project_name, 'user': user_name}
+                        client=client_name, project=project_name, user=user_name
                     )
 
                     filename = "{}-{}-{}-{}.csv".format(
