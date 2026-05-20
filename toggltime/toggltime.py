@@ -180,7 +180,7 @@ class Toggletime(object):
     def roundup(self):
         if not self.ROUNDUP:
             return
-        interval_minutes = 60 if int(self.ROUNDUP) == 1 else int(self.ROUNDUP)
+        interval_minutes = int(self.ROUNDUP)
         interval_sec = interval_minutes * 60
         self.duration = math.ceil(self.duration / interval_sec) * interval_sec
         self.stop = self.start + timedelta(seconds=self.duration)
