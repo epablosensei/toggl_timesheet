@@ -3,13 +3,14 @@
 # @author Pablo Endres <epablo+code@pabloendres.com>
 
 
+from datetime import datetime
 from urllib.parse import urlencode
 
 import requests
 from requests.auth import HTTPBasicAuth
 
 
-class ReportAPI(object):
+class ReportAPI:
     """
         A wrapper for Report API v2
         https://github.com/toggl/toggl_api_docs/blob/master/reports.md
@@ -18,10 +19,10 @@ class ReportAPI(object):
     def __init__(self, api_token: str, timezone: str, workspace_id: str) -> None:
         self.api_token = api_token
         self.timezone = timezone
-        self.worksheet_id = workspace_id
+        self.workspace_id = workspace_id
 
 
-    def _make_url(self, section: str = 'details', params: dict = {}):
+    def _make_url(self, section: str = 'details', params: dict | None = None):
         """Constructs and returns an api url to call with the section of the API to be called
         and parameters defined by key/pair values in the params dict.
 
@@ -36,15 +37,11 @@ class ReportAPI(object):
         >>> t = ReportAPI('_SECRET_TOGGLE_API_TOKEN_')
         >>> t._make_url(section='details', params = {})
         'https://api.track.toggl.com/reports/api/v2/details'
-
-        >>> t = ReportAPI('_SECRET_TOGGLE_API_TOKEN_')
-        >>> t._make_url(section='details', params = {'since' : '2010-02-05T15:42:46+02:00', 'until' : '2010-02-12T15:42:46+02:00'})
-        'https://api.track.toggl.com/reports/api/v2/details?start_date=2010-02-05T15%3A42%3A46%2B02%3A00%2B02%3A00&end_date=2010-02-12T15%3A42%3A46%2B02%3A00%2B02%3A00'
         """
 
-        url = 'https://api.track.toggl.com/reports/api/v2/{}'.format(section)
-        if len(params) > 0:
-            url = url + '?{}'.format(urlencode(params))
+        url = f'https://api.track.toggl.com/reports/api/v2/{section}'
+        if params:
+            url = url + f'?{urlencode(params)}'
         return url
 
     def _query(self, url: str, method: str) -> requests.Response:
@@ -58,25 +55,36 @@ class ReportAPI(object):
         elif method == 'POST':
             r = requests.post(url, headers=headers, auth=auth, timeout=30)
         else:
-            raise ValueError('Undefined HTTP method "{}"'.format(method))
+            raise ValueError(f'Undefined HTTP method "{method}"')
 
         r.raise_for_status()
         return r
 
     ## Detailed Report section
-    def get_detailed_report(self, since: str = '', until: str = '', workspace_id: str = '', rounding: str = 'off', per_page: int = 50) -> list:
+    def get_detailed_report(
+        self,
+        since: datetime | str = '',
+        until: datetime | str = '',
+        workspace_id: str = '',
+        rounding: str = 'off',
+        per_page: int = 50,
+    ) -> list:
         """Get a detailed report """
 
-        data_list = []
+        data_list: list = []
         last_page = 1   #Default is always 1
 
         if workspace_id == '':
-            workspace_id = self.worksheet_id
+            workspace_id = self.workspace_id
 
-        url = self._make_url(section='details', params={'since': since, 'until': until,
-                                                        'user_agent': 'toggl_timesheet',
-                                                        'rounding': rounding, 'workspace_id': workspace_id,
-                                                        'per_page': per_page})
+        url = self._make_url(section='details', params={
+            'since': since,
+            'until': until,
+            'user_agent': 'toggl_timesheet',
+            'rounding': rounding,
+            'workspace_id': workspace_id,
+            'per_page': per_page,
+        })
         r = self._query(url=url, method='GET')
         res = r.json()
 
@@ -89,15 +97,19 @@ class ReportAPI(object):
         if total_count % per_page != 0:
             last_page = (total_count // per_page) + 1
         else:
-            last_page = (total_count // per_page)
+            last_page = total_count // per_page
 
         if last_page > 1:
             # Get all pages
             for page in range(2, last_page + 1):
-                url = self._make_url(section='details', params={'since': since, 'until': until,
-                                                                'user_agent': 'toggl_timesheet',
-                                                                'rounding': rounding, 'workspace_id': workspace_id,
-                                                                'page': page})
+                url = self._make_url(section='details', params={
+                    'since': since,
+                    'until': until,
+                    'user_agent': 'toggl_timesheet',
+                    'rounding': rounding,
+                    'workspace_id': workspace_id,
+                    'page': page,
+                })
                 r = self._query(url=url, method='GET')
                 res = r.json()
                 data_list = data_list + res['data']

@@ -3,15 +3,13 @@
 # @author Pablo Endres <epablo+code@pabloendres.com>
 
 
-from __future__ import division
-from datetime import datetime, timedelta
+from datetime import timedelta
 import math
-from typing import Any
 
 import dateutil.parser
 
 
-class Toggletime(object):
+class Toggletime:
     """ Model Toggle time related items JSON time entries
         This should work with both items from the TogglAPI and the ReportAPI
     """
@@ -117,7 +115,6 @@ class Toggletime(object):
             elif 30 < self.stop.minute <= 45:
                 self.stop = self.stop.replace(minute=45, second=0)
             elif 45 < self.stop.minute <= 59:
-                print(self.stop)
                 self.stop = self.stop.replace(hour=self.stop.hour + 1, minute=0, second=0)
         elif self.ALIGN_TIME == 30:
             if 0 < self.stop.minute <= 30:
@@ -194,10 +191,10 @@ if __name__ == '__main__':
     doctest.testmod()
 
     print("TogglAPI - test")
-    tt = Toggletime({u'duronly': False, u'wid': 507341, u'description': u'Test entry', \
-                     u'stop': u'2015-03-18T16:55:00+00:00', u'duration': 4500, u'pid': 5503294, \
-                     u'start': u'2015-03-18T15:35:00+00:00', u'at': u'2015-03-18T16:48:04+00:00', \
-                     u'billable': False, u'tid': 3399821, u'id': 210886825, u'uid': 676699})
+    tt = Toggletime({'duronly': False, 'wid': 507341, 'description': 'Test entry', \
+                     'stop': '2015-03-18T16:55:00+00:00', 'duration': 4500, 'pid': 5503294, \
+                     'start': '2015-03-18T15:35:00+00:00', 'at': '2015-03-18T16:48:04+00:00', \
+                     'billable': False, 'tid': 3399821, 'id': 210886825, 'uid': 676699})
     tt.ALIGN_TIME = 15
     print(tt.start, tt.stop, tt.duration, tt.ROUNDUP, tt.ALIGN_TIME)
     print(tt.duration_dec, tt.stop - tt.start)
@@ -209,12 +206,28 @@ if __name__ == '__main__':
 
     print("")
     print("ReportAPI - test")
-    tt = Toggletime({u'updated': u'2015-03-02T10:02:59+01:00', u'task': u'Other', u'end': u'2015-03-02T09:00:10+01:00', \
-                     u'description': u'Other', u'project_color': u'13', u'tags': '', u'is_billable': True, \
-                     u'pid': 5503294, u'cur': u'EUR', u'project': u'Proy1', u'start': u'2015-03-02T07:17:00+01:00', \
-                     u'client': u'Client1', u'user': u'Max', u'billable': 0.0, u'tid': 3399820, \
-                     u'project_hex_color': u'#bc2d07', u'dur': 7200000, u'use_stop': True, u'id': 205009936,
-                     u'uid': 676699})
+    tt = Toggletime({
+        'updated': '2015-03-02T10:02:59+01:00',
+        'task': 'Other',
+        'end': '2015-03-02T09:00:10+01:00',
+        'description': 'Other',
+        'project_color': '13',
+        'tags': '',
+        'is_billable': True,
+        'pid': 5503294,
+        'cur': 'EUR',
+        'project': 'Proy1',
+        'start': '2015-03-02T07:17:00+01:00',
+        'client': 'Client1',
+        'user': 'Max',
+        'billable': 0.0,
+        'tid': 3399820,
+        'project_hex_color': '#bc2d07',
+        'dur': 7200000,
+        'use_stop': True,
+        'id': 205009936,
+        'uid': 676699,
+    })
     tt.ALIGN_TIME = 15
     print(tt.start, tt.stop, tt.duration, tt.ROUNDUP, tt.ALIGN_TIME)
     print(tt.duration_dec, tt.stop - tt.start)
@@ -223,5 +236,3 @@ if __name__ == '__main__':
     print(tt.duration_dec, tt.stop - tt.start)
     tt.update_time_entry()
     print(tt.get_time_entry)
-
-

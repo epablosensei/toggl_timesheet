@@ -3,23 +3,26 @@
 # @author Pablo Endres <epablo@pabloendres.com>
 # Based on toggl_target (https://github.com/mos3abof/toggl_target) by @mos3abof
 
-import os
-import sys
-import config
-import requests
-import dataset
 import csv
 import getopt
+import os
+import sys
+from pprint import pprint
+from typing import NoReturn
 
-from togglapi import api
-from toggltime import toggltime
-from toggltime import timelib
+import dataset
 import dateutil.parser
+import requests
+
+import config
+from togglapi import api
+from toggltime import timelib
+from toggltime import toggltime
 
 
-version = "0.9.1"
-url = "http://www.pabloendres.com/tools#timesheet"
-verbose = False
+VERSION = "0.9.1"
+URL = "http://www.pabloendres.com/tools#timesheet"
+VERBOSE = False
 
 
 def internet_on() -> bool:
@@ -29,11 +32,11 @@ def internet_on() -> bool:
         return True
     except requests.exceptions.ConnectionError:
         return False
-    except:
+    except OSError:
         return False
 
 
-def print_csv(entry_list, start: str = '', stop: str = '', client: str = 'No_client') -> None:
+def print_csv(entry_list, start, stop, client: str = 'No_client') -> None:
     """
 
     :param entry_list, start='', stop='', client='No client',
@@ -44,45 +47,52 @@ def print_csv(entry_list, start: str = '', stop: str = '', client: str = 'No_cli
         client = 'No_client'
 
     filename = config.DATA_DIR + "/" + timelib.year_month_only(start) + '-' + client + ".csv"
-    with open(filename, 'w') as f:
+    with open(filename, 'w', encoding='utf-8') as f:
         print("writing " + filename)
         writer = csv.writer(f, delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
         writer.writerow(("Client: ", client))
-        writer.writerow(("Period: ", "%s - %s" % (start, stop)))
+        writer.writerow(("Period: ", f"{start} - {stop}"))
         writer.writerow((""))
-        writer.writerow(("consultant", "start date", "start time", "stop date", "stop time", "time (h)", "duration_dec"))
+        writer.writerow((
+            "consultant", "start date", "start time",
+            "stop date", "stop time", "time (h)", "duration_dec"
+        ))
         for entry in entry_list:
-            writer.writerow((entry['user'], entry['start'], entry['start_time'], '', entry['stop_time'], '', entry['duration_dec']))
+            writer.writerow((
+                entry['user'], entry['start'], entry['start_time'],
+                '', entry['stop_time'], '', entry['duration_dec']
+            ))
 
 
-def usage(error_msg: str = '') -> None:
+def usage(error_msg: str = '') -> NoReturn:
     """ Show usage options """
-
-    global version
-    global url
 
     print(error_msg)
     print("")
-    print("timeheet v" + version + "\t" + url)
-    print("usage:  timeheet.py [OPTION...] \n")
+    print("timesheet v" + VERSION + "\t" + URL)
+    print("usage:  timesheet.py [OPTION...] \n")
     print("     -h, --help                          display this help")
     print("     -t [token], --api-token=token       Toggl API token")
-    print("     -d dirname, --data-dir=dirname      directory where to store results and local database")
+    print("     -d dirname, --data-dir=dirname      "
+          "directory where to store results and local database")
     print("     -r value,   --roundup=value         round up precision")
     print("     -a,         --align-time=value      Align the start - end time of each entry")
     print("     -z,         --time-zone=tz          Timezone to use. Format \"+HH:MM\"")
     print("     -w,         --workspace-id=id       Toogl Worskpace ID")
     print("     -s,         --start=YYYY-MM-DD      Start of the report - default: last month")
     print("     -e,         --end=YYYY-MM-DD        End of the report - default: end of last month")
-    print("     -p,         --per-project           create separate CSVs per project under each client")
+    print("     -p,         --per-project           "
+          "create separate CSVs per project under each client")
     print("     -f,         --full                  export all entries to a single full.csv file")
 
     print("")
     print("")
-    print("ROUNDUP = 15  -> :00 :15 :30 :45; ROUNDUP = 30  -> :00 :30; ROUNDUP= 1  -> :00, 0 -> don't round up")
-    print("ALIGN = 15  -> :00 :15 :30 :45; ALIGN = 30  -> :00 :30; ALIGN= 1  -> :00, 0 -> don't round up")
+    print("ROUNDUP = 15  -> :00 :15 :30 :45; ROUNDUP = 30  -> :00 :30; "
+          "ROUNDUP= 1  -> :00, 0 -> don't round up")
+    print("ALIGN = 15  -> :00 :15 :30 :45; ALIGN = 30  -> :00 :30; "
+          "ALIGN= 1  -> :00, 0 -> don't round up")
     print("")
-    exit()
+    sys.exit()
 
 
 def main():
@@ -93,56 +103,56 @@ def main():
     # 'TIMEZONE': '+02:00',
     # 'WORKSPACE_ID': '507341',
 
-    start = False
-    stop = False
+    start_str: str | None = None
+    stop_str: str | None = None
     per_project = False
     full = False
 
     try:
-        opts, args = getopt.gnu_getopt(
+        opts, _ = getopt.gnu_getopt(
             sys.argv[1:], "hd:r:a:t:z:w:s:e:pf",
-            ["help", "api-token=", "data-dir=", "roundup=", "align-time=", "time-zone=", \
+            ["help", "api-token=", "data-dir=", "roundup=", "align-time=", "time-zone=",
              "workspace-id=", "start=", "end=", "per-project", "full"])
     except getopt.GetoptError as e:
         usage(e.msg)
 
     for o, arg in opts:
-        if o == "-h" or o == "--help":
+        if o in ("-h", "--help"):
             usage()
-            sys.exit(0)
-        elif o == "-t" or o == "--api-token":
+        elif o in ("-t", "--api-token"):
             config.API_TOKEN = arg
-        elif o == "-d" or o == "--data-dir":
+        elif o in ("-d", "--data-dir"):
             config.DATA_DIR = arg
-        elif o == "-r" or o == "--roundup":
-            config.ROUNDUP = arg
-        elif o == "-a" or o == "--align-time":
-            config.ALIGN_TIME = arg
-        elif o == "-z" or o == "--time-zone":
+        elif o in ("-r", "--roundup"):
+            config.ROUNDUP = int(arg)
+        elif o in ("-a", "--align-time"):
+            config.ALIGN_TIME = int(arg)
+        elif o in ("-z", "--time-zone"):
             config.TIMEZONE = arg
-        elif o == "-w" or o == "--workspace-id":
+        elif o in ("-w", "--workspace-id"):
             config.WORKSPACE_ID = arg
-        elif o == "-s" or o == "--start":
-            start = arg
-        elif o == "-e" or o == "--end":
-            stop = arg
-        elif o == "-p" or o == "--per-project":
+        elif o in ("-s", "--start"):
+            start_str = arg
+        elif o in ("-e", "--end"):
+            stop_str = arg
+        elif o in ("-p", "--per-project"):
             per_project = True
-        elif o == "-f" or o == "--full":
+        elif o in ("-f", "--full"):
             full = True
 
-    if not start and not stop:
+    if not start_str and not stop_str:
         start = timelib.last_month_start()
         stop = timelib.last_month_end()
-    elif start and not stop:
-        start = dateutil.parser.parse(start)
+    elif start_str and not stop_str:
+        start = dateutil.parser.parse(start_str)
         stop = timelib.month_end(start)
-    elif not start and stop:
-        stop = dateutil.parser.parse(stop)
+    elif not start_str and stop_str:
+        stop = dateutil.parser.parse(stop_str)
         start = timelib.month_start(stop)
     else:
-        start = dateutil.parser.parse(start)
-        stop = dateutil.parser.parse(stop)
+        assert start_str is not None and stop_str is not None
+        start = dateutil.parser.parse(start_str)
+        stop = dateutil.parser.parse(stop_str)
 
     r = api.ReportAPI(config.API_TOKEN, config.TIMEZONE, config.WORKSPACE_ID)
 
@@ -153,21 +163,22 @@ def main():
         sys.exit()
     print("\nTrying to connect to Toggl, hang on!\n")
     try:
-        print("Getting reports for entries between %s and %s\n" % (start, stop))
+        print(f"Getting reports for entries between {start} and {stop}\n")
         time_entries = r.get_detailed_report(start, stop)
     except requests.exceptions.HTTPError as e:
-        if e.response.status_code == 401:
+        status = e.response.status_code if e.response is not None else None
+        if status == 401:
             print("Authentication failed — check your API token in config.py")
-        elif e.response.status_code == 429:
+        elif status == 429:
             print("Toggl API rate limit reached — try again in a few seconds")
         else:
-            print("Toggl API error: %s" % e)
+            print(f"Toggl API error: {e}")
         sys.exit(1)
     except requests.exceptions.Timeout:
         print("Toggl API request timed out — check your connection and try again")
         sys.exit(1)
     except requests.exceptions.RequestException as e:
-        print("Toggl API request failed: %s" % e)
+        print(f"Toggl API request failed: {e}")
         sys.exit(1)
 
     # connecting to a SQLite database
@@ -197,13 +208,17 @@ def main():
 
     # Get the list of clients
     if not full and not per_project:
-        clients = db.query('select distinct(client) from timesheet;')
+        clients = list(db.query('select distinct(client) from timesheet;'))
 
         for c in clients:
-            c['client'] = str(c['client'] or '')
-            timeheet = db.query("select user, start, min(start_time) as start_time, max(stop_time) as stop_time, \
-            sum(duration_dec) as duration_dec from timesheet where client='" + c['client'] + "' group by start;")
-            print_csv(timeheet, start.date(), stop.date(), c['client'])
+            client_name = str(c['client'] or '')
+            timesheet = db.query(
+                "SELECT user, start, MIN(start_time) AS start_time, MAX(stop_time) AS stop_time, "
+                "SUM(duration_dec) AS duration_dec "
+                "FROM timesheet WHERE client = :client GROUP BY start;",
+                client=client_name
+            )
+            print_csv(timesheet, start.date(), stop.date(), client_name)
 
     if per_project:
         clients = list(db.query('SELECT DISTINCT(client) FROM timesheet;'))
@@ -212,16 +227,16 @@ def main():
         for u in users:
             user_name = str(u['user'] or '')
             # user_name in camel case
-            user_nameCC = u['user'].replace(" ", "_")
-            user_nameCC = user_nameCC.lower()
-            print("Creating CSVs for %s" % user_name)
+            user_name_cc = user_name.replace(" ", "_").lower()
+            print(f"Creating CSVs for {user_name}")
 
             for c in clients:
                 client_name = str(c['client'] or '')
-                print("Working on %s/%s" % (client_name, user_name))
+                print(f"Working on {client_name}/{user_name}")
 
                 projects = db.query(
-                    "SELECT DISTINCT(project) FROM timesheet WHERE client = :client and user = :user;",
+                    "SELECT DISTINCT(project) FROM timesheet "
+                    "WHERE client = :client and user = :user;",
                     client=client_name, user=user_name
                 )
 
@@ -229,33 +244,37 @@ def main():
                     project_name = str(p['project'] or '')
 
                     entries = db.query(
-                        "SELECT user, start, MIN(start_time) AS start_time, MAX(stop_time) AS stop_time, "
+                        "SELECT user, start, "
+                        "MIN(start_time) AS start_time, MAX(stop_time) AS stop_time, "
                         "SUM(duration_dec) AS duration_dec "
-                        "FROM timesheet WHERE client = :client AND project = :project AND user = :user "
+                        "FROM timesheet "
+                        "WHERE client = :client AND project = :project AND user = :user "
                         "GROUP by start;",
                         client=client_name, project=project_name, user=user_name
                     )
 
-                    filename = "{}-{}-{}-{}.csv".format(
-                        timelib.year_month_only(start),
-                        client_name,
-                        project_name,
-                        user_nameCC
-                    )
+                    ym = timelib.year_month_only(start)
+                    filename = f"{ym}-{client_name}-{project_name}-{user_name_cc}.csv"
 
                     filepath = os.path.join(config.DATA_DIR, filename)
-                    with open(filepath, 'w') as f:
+                    with open(filepath, 'w', encoding='utf-8') as f:
                         print("Writing " + filepath)
                         writer = csv.writer(f, delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
                         writer.writerow(("Client:", client_name))
                         writer.writerow(("Project:", project_name))
-                        writer.writerow(("Period:", "%s - %s" % (start, stop)))
+                        writer.writerow(("Period:", f"{start} - {stop}"))
                         writer.writerow(("User:", user_name))
                         writer.writerow((""))
                         writer.writerow(())
-                        writer.writerow(("consultant", "start date", "start time", "stop date", "stop time", "time (h)", "duration_dec"))
+                        writer.writerow((
+                            "consultant", "start date", "start time",
+                            "stop date", "stop time", "time (h)", "duration_dec"
+                        ))
                         for entry in entries:
-                            writer.writerow((entry['user'], entry['start'], entry['start_time'], '', entry['stop_time'], '', entry['duration_dec']))
+                            writer.writerow((
+                                entry['user'], entry['start'], entry['start_time'],
+                                '', entry['stop_time'], '', entry['duration_dec']
+                            ))
     if full:
         full_entries = db.query(
             "SELECT user, start, MIN(start_time) AS start_time, MAX(stop_time) AS stop_time, "
@@ -263,18 +282,22 @@ def main():
             "FROM timesheet GROUP BY user, start;"
         )
         filename = os.path.join(config.DATA_DIR, timelib.year_month_only(start) + "-full.csv")
-        with open(filename, 'w') as f:
+        with open(filename, 'w', encoding='utf-8') as f:
             print("Writing " + filename)
             writer = csv.writer(f, delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
-            writer.writerow(("consultant", "start date", "start time", "stop date", "stop time", "time (h)", "duration_dec"))
+            writer.writerow((
+                "consultant", "start date", "start time",
+                "stop date", "stop time", "time (h)", "duration_dec"
+            ))
             for entry in full_entries:
-                writer.writerow((entry['user'], entry['start'], entry['start_time'], '', entry['stop_time'], '', entry['duration_dec']))
+                writer.writerow((
+                    entry['user'], entry['start'], entry['start_time'],
+                    '', entry['stop_time'], '', entry['duration_dec']
+                ))
 
 
 
 def print_config():
-    from pprint import pprint
-
     pprint(vars(config))
 
 if __name__ == '__main__':

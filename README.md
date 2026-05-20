@@ -7,7 +7,7 @@ so I adapted this small little project from [toggl_target](https://github.com/mo
 It started with some tweeks, but by this version mainly the inspiration and the toggleapi.TogglAPI remain.
 _____________________
 
-Ported to Python 3 by [Kat Leese](https://github.com/katalyst666).
+Ported to Python 3 in May 2026 by [Kat Leese](https://github.com/katalyst666).
 
 
 Installation on linux
