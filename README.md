@@ -88,8 +88,14 @@ usage:  timeheet.py [OPTION...]
      -f,         --full                  export all entries to a single full.csv file
 
 
-ROUNDUP = 15  -> :00 :15 :30 :45; ROUNDUP = 30  -> :00 :30; ROUNDUP= 1  -> :00, 0 -> don't round up
-ALIGN = 15  -> :00 :15 :30 :45; ALIGN = 30  -> :00 :30; ALIGN= 1  -> :00, 0 -> don't round up
+ALIGN_TIME snaps both start and stop times to clean boundaries; duration is recalculated from the snapped times.
+ALIGN_TIME = 15 -> :00 :15 :30 :45; ALIGN_TIME = 30 -> :00 :30; ALIGN_TIME = 1 -> :00; 0 -> off
+
+ROUNDUP rounds the duration up to the next interval, extending stop time forward; start time is unchanged.
+ROUNDUP = 15 -> next 15-min interval; ROUNDUP = 30 -> next 30-min; ROUNDUP = 1 -> next minute; 0 -> off
+
+Note: when both are set to the same value (e.g. ALIGN_TIME=15, ROUNDUP=15), ROUNDUP has no effect —
+alignment already guarantees the duration is a multiple of the interval.
 ```
 
 

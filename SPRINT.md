@@ -7,7 +7,7 @@ Goal: Full Python 3 Migration (clean port — no Python 2 compatibility maintain
 ## Backlog (Prioritized)
 
 ### Housekeeping
-- [ ] **[CHORE-003]** Update CLAUDE.md to reflect Python 3 (currently still says Python 2.7)
+- [x] **[CHORE-003]** Update CLAUDE.md to reflect Python 3 (currently still says Python 2.7)
 - [ ] **[CHORE-004]** Resolve remaining Pylance red marks — `dataset` has no type stubs so
   Pylance flags all query row access even in basic mode; options: write a stub, switch to
   a typed ORM, or suppress per-file

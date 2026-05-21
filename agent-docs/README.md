@@ -8,13 +8,12 @@ When asking Claude to work on a specific area, reference the relevant doc:
 - "Read agent-docs/api-patterns.md before implementing the new endpoint"
 - "Follow the conventions in agent-docs/python3-migration.md"
 
-## Suggested Documents
+## Documents
 
-Consider creating docs for:
-- **toggl-api.md** - Toggl API documentation, rate limits, authentication
-- **python3-migration.md** - Migration checklist, compatibility notes
-- **csv-format.md** - Expected CSV output format, column definitions
-- **time-rounding.md** - Business rules for time rounding and alignment
+- **[toggl-api.md](toggl-api.md)** - Toggl API authentication, endpoints, pagination, rate limits
+- **[python3-migration.md](python3-migration.md)** - What changed in the Python 3 migration, known issues
+- **[csv-format.md](csv-format.md)** - CSV output format, column definitions, filename conventions
+- **[time-rounding.md](time-rounding.md)** - Business rules for ALIGN_TIME and ROUNDUP settings
 
 ## Tips
 

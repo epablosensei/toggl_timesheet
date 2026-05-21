@@ -4,7 +4,7 @@
 
 CLI tool to export Toggl time entries to CSV timesheets. Fetches time tracking data from the Toggl API and generates formatted CSV reports organized by client and project.
 
-**Tech Stack:** Python 2.7 (legacy, planning upgrade to Python 3)
+**Tech Stack:** Python 3
 **Dependencies:** requests, dataset, SQLAlchemy, python-dateutil
 
 ## Commands
@@ -16,10 +16,10 @@ CLI tool to export Toggl time entries to CSV timesheets. Fetches time tracking d
 - `python timesheet.py -f` - Export all entries to full.csv
 - `python timesheet.py -h` - Show help
 
-### Development Setup (using virtualenv - recommended)
+### Development Setup
 ```bash
 # Create and activate virtual environment
-python -m virtualenv venv
+python3 -m venv venv
 source venv/bin/activate  # Linux/Mac
 # venv\Scripts\activate   # Windows
 
@@ -80,8 +80,7 @@ pip install -r requirements.txt
 ## Conventions
 
 ### Code Style
-- Maintain Python 2.7 compatibility while preparing for Python 3 migration
-- Use `from __future__ import` for forward compatibility
+- Python 3 only — no Python 2 compatibility
 - Follow existing patterns in codebase
 
 ### Commit Messages
@@ -100,6 +99,5 @@ Use Conventional Commits format:
 
 ## Notes
 
-- The codebase uses Python 2.7 print statements and urllib
-- Migration to Python 3 is planned
-- Virtual environments: `venv-tt/` (old), `venv-tt-new/` (newer)
+- Virtual environment: `venv/` (activate with `source venv/bin/activate`)
+- `ALIGN_TIME` and `ROUNDUP` are independent settings with different effects — see `agent-docs/time-rounding.md` for full details. When set to the same value, `ROUNDUP` is a no-op. Current use case: `ALIGN_TIME=15`, `ROUNDUP=0`.
