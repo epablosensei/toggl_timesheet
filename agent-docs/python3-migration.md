@@ -28,6 +28,7 @@ Migration completed May 2026 on branch `feature/python3-migration`. The codebase
 
 ### New functionality
 - `roundup()` method implemented properly — was an unimplemented stub in Python 2 (see `agent-docs/time-rounding.md`)
+- `-m`/`--monthly` flag ported from master — one CSV per user with daily aggregated totals
 - `-f` (full mode) now aggregates by day — was outputting one row per entry previously
 - Proper error handling added to API calls: timeouts, 401, 429, generic HTTP errors
 - Type hints added across all modules; mypy and pyright clean

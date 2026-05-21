@@ -56,6 +56,25 @@ Username is lowercased with spaces replaced by underscores.
 
 ---
 
+### Monthly mode (`-m`)
+
+One CSV per user. Entries aggregated by day across all clients and projects — one row per day with daily totals.
+
+**Filename:** `YYYY-MM-<username>-monthly.csv`
+**Example:** `2026-04-jane_smith-monthly.csv`
+
+**Header rows:**
+```
+"User:";    "<user>"
+"Period:";  "<start> - <stop>"
+""
+"consultant"; "start date"; "start time"; "stop time"; "duration_dec"
+```
+
+**Data rows:** one per day per user (note: no stop date or `time (h)` columns).
+
+---
+
 ### Full mode (`-f`)
 
 Single CSV with all entries across all clients and users. Aggregated by user and day.

@@ -20,6 +20,11 @@ Goal: Full Python 3 Migration (clean port — no Python 2 compatibility maintain
 
 ## Completed
 
+- [x] **[TASK-012]** Port `-m`/`--monthly` flag to Python 3
+  - Completed: 2026-05-21
+  - Branch: feature/python3-migration
+  - Ported from master (commit af42c13); one CSV per user with daily aggregated totals
+
 - [x] **[CHORE-001]** Add Claude Code configuration
   - Completed: 2026-01-21
   - Branch: claudify-repo

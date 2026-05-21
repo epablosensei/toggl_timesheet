@@ -84,8 +84,11 @@ def usage(error_msg: str = '') -> NoReturn:
     print("     -p,         --per-project           "
           "create separate CSVs per project under each client")
     print("     -f,         --full                  export all entries to a single full.csv file")
+    print("     -m,         --monthly               export daily totals per user to monthly CSV")
 
     print("")
+    print("-f exports every individual time entry (raw data) to a single CSV")
+    print("-m exports one row per day per user (daily totals across all clients/projects)")
     print("")
     print("ALIGN_TIME = 15 -> snaps start/stop to :00 :15 :30 :45; "
           "ALIGN_TIME = 30 -> :00 :30; ALIGN_TIME = 1 -> :00; 0 -> off")
@@ -107,12 +110,13 @@ def main():
     stop_str: str | None = None
     per_project = False
     full = False
+    monthly = False
 
     try:
         opts, _ = getopt.gnu_getopt(
-            sys.argv[1:], "hd:r:a:t:z:w:s:e:pf",
+            sys.argv[1:], "hd:r:a:t:z:w:s:e:pfm",
             ["help", "api-token=", "data-dir=", "roundup=", "align-time=", "time-zone=",
-             "workspace-id=", "start=", "end=", "per-project", "full"])
+             "workspace-id=", "start=", "end=", "per-project", "full", "monthly"])
     except getopt.GetoptError as e:
         usage(e.msg)
 
@@ -139,6 +143,8 @@ def main():
             per_project = True
         elif o in ("-f", "--full"):
             full = True
+        elif o in ("-m", "--monthly"):
+            monthly = True
 
     if not start_str and not stop_str:
         start = timelib.last_month_start()
@@ -207,7 +213,7 @@ def main():
     users = db.query('SELECT DISTINCT(user) FROM timesheet;')
 
     # Get the list of clients
-    if not full and not per_project:
+    if not full and not per_project and not monthly:
         clients = list(db.query('select distinct(client) from timesheet;'))
 
         for c in clients:
@@ -295,6 +301,39 @@ def main():
                     '', entry['stop_time'], '', entry['duration_dec']
                 ))
 
+
+
+    if monthly:
+        user_list = list(db.query('SELECT DISTINCT(user) FROM timesheet;'))
+        for u in user_list:
+            user_name = str(u['user'] or 'Unknown')
+            user_name_cc = user_name.replace(" ", "_").lower()
+
+            monthly_entries = db.query(
+                "SELECT user, start, MIN(start_time) AS start_time, "
+                "MAX(stop_time) AS stop_time, SUM(duration_dec) AS duration_dec "
+                "FROM timesheet WHERE user = :user "
+                "GROUP BY start ORDER BY start;",
+                user=user_name
+            )
+
+            ym = timelib.year_month_only(start)
+            filepath = os.path.join(config.DATA_DIR, f"{ym}-{user_name_cc}-monthly.csv")
+            with open(filepath, 'w', encoding='utf-8') as f:
+                print(f"Writing {filepath}")
+                writer = csv.writer(f, delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
+                writer.writerow(("User:", user_name))
+                writer.writerow(("Period:", f"{start.date()} - {stop.date()}"))
+                writer.writerow((""))
+                writer.writerow((
+                    "consultant", "start date", "start time",
+                    "stop time", "duration_dec"
+                ))
+                for entry in monthly_entries:
+                    writer.writerow((
+                        entry['user'], entry['start'], entry['start_time'],
+                        entry['stop_time'], entry['duration_dec']
+                    ))
 
 
 def print_config():

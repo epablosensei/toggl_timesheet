@@ -86,6 +86,7 @@ usage:  timesheet.py [OPTION...]
      -e,         --end=YYYY-MM-DD        End of the report - default: end of last month
      -p,         --per-project           create separate CSVs per project under each client
      -f,         --full                  export all entries to a single full.csv file
+     -m,         --monthly               export daily totals per user to monthly CSV
 
 
 ALIGN_TIME snaps both start and stop times to clean boundaries; duration is recalculated from the snapped times.
@@ -93,6 +94,8 @@ ALIGN_TIME = 15 -> :00 :15 :30 :45; ALIGN_TIME = 30 -> :00 :30; ALIGN_TIME = 1 -
 
 ROUNDUP rounds the duration up to the next interval, extending stop time forward; start time is unchanged.
 ROUNDUP = 15 -> next 15-min interval; ROUNDUP = 30 -> next 30-min; ROUNDUP = 1 -> next minute; 0 -> off
+
+-f exports every individual time entry as a raw data dump; -m exports one row per day per user (daily totals across all clients/projects).
 
 Note: when both are set to the same value (e.g. ALIGN_TIME=15, ROUNDUP=15), ROUNDUP has no effect —
 alignment already guarantees the duration is a multiple of the interval.
