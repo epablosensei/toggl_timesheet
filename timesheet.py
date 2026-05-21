@@ -20,7 +20,7 @@ from toggltime import timelib
 from toggltime import toggltime
 
 
-VERSION = "0.9.1"
+VERSION = "0.9.2"
 URL = "http://www.pabloendres.com/tools#timesheet"
 VERBOSE = False
 
@@ -78,7 +78,7 @@ def usage(error_msg: str = '') -> NoReturn:
     print("     -r value,   --roundup=value         round up precision")
     print("     -a,         --align-time=value      Align the start - end time of each entry")
     print("     -z,         --time-zone=tz          Timezone to use. Format \"+HH:MM\"")
-    print("     -w,         --workspace-id=id       Toogl Worskpace ID")
+    print("     -w,         --workspace-id=id       Toggl Workspace ID")
     print("     -s,         --start=YYYY-MM-DD      Start of the report - default: last month")
     print("     -e,         --end=YYYY-MM-DD        End of the report - default: end of last month")
     print("     -p,         --per-project           "
@@ -87,10 +87,10 @@ def usage(error_msg: str = '') -> NoReturn:
 
     print("")
     print("")
-    print("ROUNDUP = 15  -> :00 :15 :30 :45; ROUNDUP = 30  -> :00 :30; "
-          "ROUNDUP= 1  -> :00, 0 -> don't round up")
-    print("ALIGN = 15  -> :00 :15 :30 :45; ALIGN = 30  -> :00 :30; "
-          "ALIGN= 1  -> :00, 0 -> don't round up")
+    print("ALIGN_TIME = 15 -> snaps start/stop to :00 :15 :30 :45; "
+          "ALIGN_TIME = 30 -> :00 :30; ALIGN_TIME = 1 -> :00; 0 -> off")
+    print("ROUNDUP = 15 -> rounds duration up to next 15-min interval (extends stop); "
+          "0 -> off. Redundant when same value as ALIGN_TIME.")
     print("")
     sys.exit()
 
@@ -99,7 +99,7 @@ def main():
     # 'API_TOKEN': '38bf888afc4203fb443a5503b1f36252',
     # 'DATA_DIR': 'data',
     # 'ROUNDUP': 15,
-    # ALIGN_TIME': 15
+    # 'ALIGN_TIME': 15
     # 'TIMEZONE': '+02:00',
     # 'WORKSPACE_ID': '507341',
 

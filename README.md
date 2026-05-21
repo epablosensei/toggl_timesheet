@@ -72,8 +72,8 @@ Usage
 -----
 
 ```
-timeheet v0.9.1	http://www.pabloendres.com/tools#timesheet
-usage:  timeheet.py [OPTION...] 
+timesheet v0.9.2	http://www.pabloendres.com/tools#timesheet
+usage:  timesheet.py [OPTION...] 
 
      -h, --help                          display this help
      -t [token], --api-token=token       Toggl API token
@@ -81,7 +81,7 @@ usage:  timeheet.py [OPTION...]
      -r value,   --roundup=value         round up precision
      -a,         --align-time=value      Align the start - end time of each entry
      -z,         --time-zone=tz          Timezone to use. Format "+HH:MM"
-     -w,         --workspace-id=id       Toogl Worskpace ID
+     -w,         --workspace-id=id       Toggl Workspace ID
      -s,         --start=YYYY-MM-DD      Start of the report - default: last month
      -e,         --end=YYYY-MM-DD        End of the report - default: end of last month
      -p,         --per-project           create separate CSVs per project under each client

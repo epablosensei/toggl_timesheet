@@ -13,7 +13,7 @@ All CSVs use `;` as the delimiter and `QUOTE_NONNUMERIC` quoting (all non-numeri
 One CSV per client. Entries are aggregated by day — multiple entries on the same day for the same client are collapsed into one row (MIN start_time, MAX stop_time, SUM duration_dec).
 
 **Filename:** `YYYY-MM-<client>.csv`
-**Example:** `2026-04-Bunkai.csv`
+**Example:** `2026-04-Acme.csv`
 
 **Header rows:**
 ```
@@ -37,7 +37,7 @@ Note: stop date and `time (h)` columns are always empty (`""`).
 One CSV per client/project/user combination.
 
 **Filename:** `YYYY-MM-<client>-<project>-<username>.csv`
-**Example:** `2026-04-Bunkai-Bunkai-katherine.csv`
+**Example:** `2026-04-Acme-Website-jane_smith.csv`
 
 Username is lowercased with spaces replaced by underscores.
 

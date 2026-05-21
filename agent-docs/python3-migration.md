@@ -41,5 +41,5 @@ Migration completed May 2026 on branch `feature/python3-migration`. The codebase
 
 ## Known remaining issues
 
-- **CHORE-004:** `dataset` has no type stubs — Pylance flags all `db.query()` row access. Options: write a stub, switch to a typed ORM, or suppress per-file. Currently suppressed via `.vscode/settings.json` (`typeCheckingMode: basic`).
+- **CHORE-004:** `dataset` has no type stubs — Pylance flags all `db.query()` row access. Options: write a stub, switch to a typed ORM, or suppress per-file. Can be suppressed locally by setting `python.analysis.typeCheckingMode: basic` in your IDE.
 - **TASK-010:** Toggl Reports API v3 is coming but not yet documented. Currently on v2 which is confirmed working.

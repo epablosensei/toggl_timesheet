@@ -54,7 +54,7 @@ pip install -r requirements.txt
 │  │  togglapi/   │  │  toggltime/  │                             │
 │  │  api.py      │  │  toggltime.py│                             │
 │  │              │  │  timelib.py  │                             │
-│  │ - TogglAPI   │  │              │                             │
+│  │              │  │              │                             │
 │  │ - ReportAPI  │  │ - Toggletime │                             │
 │  └──────┬───────┘  │ - Time utils │                             │
 │         │          └──────┬───────┘                             │
@@ -72,7 +72,7 @@ pip install -r requirements.txt
 ### Key Modules
 
 - **timesheet.py** - Main CLI, argument parsing, CSV generation
-- **togglapi/api.py** - `TogglAPI` (time entries), `ReportAPI` (detailed reports)
+- **togglapi/api.py** - `ReportAPI` (detailed reports via Toggl Reports API v2)
 - **toggltime/toggltime.py** - `Toggletime` class for time entry manipulation
 - **toggltime/timelib.py** - Date/time utility functions
 - **config.py** - User configuration (API token, workspace ID, timezone)

@@ -18,7 +18,9 @@ TIMEZONE = '+02:00'
 ALIGN_TIME = 15
 
 # Roundup — rounds the duration up to the next interval, extending stop time forward; start is unchanged.
-# Only has an effect when ALIGN_TIME = 0. When ALIGN_TIME and ROUNDUP are the same value, ROUNDUP is redundant.
+# When ALIGN_TIME and ROUNDUP are set to the same value, ROUNDUP is redundant (alignment already
+# guarantees the duration is a multiple of the interval). They can be used independently, e.g.
+# ALIGN_TIME=15 with ROUNDUP=30 will first snap to 15-min boundaries then round duration up to 30 min.
 # ROUNDUP = 15  -> next 15-min interval; ROUNDUP = 30  -> next 30-min; ROUNDUP = 1  -> next minute; 0 -> off
 ROUNDUP = 0
 
