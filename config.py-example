@@ -1,27 +1,28 @@
-import os
-
-# Diretory where to look for and write the data
-DATA_DIR = os.environ.get('TOGGL_DATA_DIR', 'data')
+# Directory where to look for and write the data
+DATA_DIR = 'data'
 
 # Toggl API Token
-API_TOKEN = os.environ.get('TOGGL_API_TOKEN', 'ADD YOUR API TOKEN HERE')
+API_TOKEN = 'ADD YOUR API TOKEN HERE'
 
-# Worksheetid
-WORKSPACE_ID = os.environ.get('TOGGL_WORKSPACE_ID', 'ADD YOUR WORKSPACE_ID HERE')
+# Workspace ID
+WORKSPACE_ID = 'ADD YOUR WORKSPACE_ID HERE'
 
 # Timezone
-TIMEZONE = os.environ.get('TOGGL_TIMEZONE', '+02:00')
+TIMEZONE = '+02:00'
 
-# Roundup
-# Rounding adjusts the duration of each entry
-# ROUNDUP = 15  -> :00 :15 :30 :45; ROUNDUP = 30  -> :00 :30; ROUNDUP= 1  -> :00, 0 -> don't round up
-ROUNDUP = int(os.environ.get('TOGGL_ROUNDUP', 15))
-
-# Align time
-# This is used to align the start - end time of each entry and with it the duration
+# Align time — snaps both start and stop times to clean boundaries; duration is recalculated from those times.
 # ALIGN_TIME = 15  -> :00 :15 :30 :45
 # ALIGN_TIME = 30  -> :00 :30
-# ALIGN_TIME = 1  -> :00
-# ALIGN_TIME = 0 don't align
-# Example: start 7:20 - end 8:20 and ALIGN_TIME = 15  will be adjusted to: start 7:15 - end 8:30
-ALIGN_TIME = int(os.environ.get('TOGGL_ALIGN_TIME', 15))
+# ALIGN_TIME = 1   -> :00 (hourly)
+# ALIGN_TIME = 0   -> off
+ALIGN_TIME = 15
+
+# Roundup — rounds the duration up to the next interval, extending stop time forward; start is unchanged.
+# When ALIGN_TIME and ROUNDUP are set to the same value, ROUNDUP is redundant (alignment already
+# guarantees the duration is a multiple of the interval). They can be used independently, e.g.
+# ALIGN_TIME=15 with ROUNDUP=30 will first snap to 15-min boundaries then round duration up to 30 min.
+# ROUNDUP = 15  -> next 15-min interval; ROUNDUP = 30  -> next 30-min; ROUNDUP = 1  -> next minute; 0 -> off
+ROUNDUP = 0
+
+
+

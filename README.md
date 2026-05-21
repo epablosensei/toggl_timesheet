@@ -5,81 +5,23 @@ I use Toggl (www.toggl.com) to track time for my consulting work and some client
 so I adapted this small little project from [toggl_target](https://github.com/mos3abof/toggl_target) to fit my needs.
 
 It started with some tweeks, but by this version mainly the inspiration and the toggleapi.TogglAPI remain.
+_____________________
 
-Container Usage (Podman/Docker)
--------------------------------
+Ported to Python 3 in May 2026 by [Kat Leese](https://github.com/katalyst666).
 
-Run toggl_timesheet in a container without installing Python 2.7 on your host.
-
-### Quick Start
-
-```bash
-# Build the image
-podman build -t toggl-timesheet .
-# or: docker build -t toggl-timesheet .
-
-# Show help (no API call)
-podman run --rm toggl-timesheet -h
-```
-
-### Using the Convenience Script
-
-The `run-timesheet.sh` script auto-detects podman/docker and handles mounts:
-
-```bash
-# Show help
-./run-timesheet.sh -h
-
-# Generate timesheet for a date range
-./run-timesheet.sh -s 2024-01-01 -e 2024-01-31
-
-# Generate per-project CSVs
-./run-timesheet.sh -s 2024-01-01 -e 2024-01-31 -p
-```
-
-### Manual Run
-
-```bash
-# Run with a mounted config.py (recommended)
-# Note: :z flag needed for SELinux (Fedora/RHEL); safe to use elsewhere
-podman run --rm \
-    -v ./config.py:/app/config.py:ro,z \
-    -v ./data:/app/data:z \
-    toggl-timesheet -s 2024-01-01 -e 2024-01-31
-
-# Run with environment variables instead
-podman run --rm \
-    -e TOGGL_API_TOKEN=your_token \
-    -e TOGGL_WORKSPACE_ID=your_workspace_id \
-    -v ./data:/app/data:z \
-    toggl-timesheet -s 2024-01-01 -e 2024-01-31
-```
-
-### Environment Variables
-
-When running in a container, you can configure via environment variables instead of `config.py`:
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `TOGGL_API_TOKEN` | Toggl API token | _(required)_ |
-| `TOGGL_WORKSPACE_ID` | Toggl workspace ID | _(required)_ |
-| `TOGGL_TIMEZONE` | Timezone offset | `+02:00` |
-| `TOGGL_ROUNDUP` | Rounding precision (minutes) | `15` |
-| `TOGGL_ALIGN_TIME` | Time alignment (minutes) | `15` |
-| `TOGGL_DATA_DIR` | Data directory inside container | `data` |
 
 Installation on linux
 ---------------------
 
-If you are using linux, you most probably have Python already installed on your machine.
-If not, use your distro's package management system to install Python 2.7
+If you are using linux, you most probably have Python 3 already installed on your machine.
+If not, use your distro's package management system to install Python 3.
 
 * Download the source code from [here](https://github.com/epablosensei/toggl_timesheet/archive/master.zip)
 * Navigate to the directory and create a virtual environment (recommended):
 
 ```bash
 # Create virtual environment
-python -m virtualenv venv
+python3 -m venv venv
 
 # Activate virtual environment
 source venv/bin/activate
@@ -100,17 +42,14 @@ pip install -r requirements.txt
 Installation on Windows
 -----------------------
 
-* If you don't have Python installed, then you must install Python 2.7 from [here](http://python.org/ftp/python/2.7.5/python-2.7.5.msi)
+* If you don't have Python installed, then you must install Python 3 from [python.org](https://www.python.org/downloads/)
 * Download the file
 * Press the start button, select run, and run cmd.exe
 * In the command shell, create a virtual environment (recommended):
 
 ```cmd
-# Install virtualenv if needed
-pip install virtualenv
-
 # Create virtual environment
-python -m virtualenv venv
+python -m venv venv
 
 # Activate virtual environment
 venv\Scripts\activate
@@ -122,7 +61,7 @@ pip install -r requirements.txt
 > **Note:** Using a virtual environment keeps dependencies isolated and prevents conflicts with system packages. Always activate the venv before running the tool.
 
 * Download toggl_target from [here](https://github.com/epablosensei/toggl_timesheet/archive/master.zip)
-* Expand the downloaded zip file, copy `config.py-example` & paste it as `config.py` beside `run.py`
+* Expand the downloaded zip file, copy `config.py-example` & paste it as `config.py` beside `timesheet.py`
 * In `config.py` 
 ** add your Toggl  API token which can be found in your Toggl account's settings.
 ** add your workspace_id which can be found in your Toggl account's settings.
@@ -133,8 +72,8 @@ Usage
 -----
 
 ```
-timeheet v0.9.1	http://www.pabloendres.com/tools#timesheet
-usage:  timeheet.py [OPTION...] 
+timesheet v0.9.2	http://www.pabloendres.com/tools#timesheet
+usage:  timesheet.py [OPTION...] 
 
      -h, --help                          display this help
      -t [token], --api-token=token       Toggl API token
@@ -142,18 +81,24 @@ usage:  timeheet.py [OPTION...]
      -r value,   --roundup=value         round up precision
      -a,         --align-time=value      Align the start - end time of each entry
      -z,         --time-zone=tz          Timezone to use. Format "+HH:MM"
-     -w,         --workspace-id=id       Toogl Worskpace ID
+     -w,         --workspace-id=id       Toggl Workspace ID
      -s,         --start=YYYY-MM-DD      Start of the report - default: last month
      -e,         --end=YYYY-MM-DD        End of the report - default: end of last month
      -p,         --per-project           create separate CSVs per project under each client
      -f,         --full                  export all entries to a single full.csv file
-     -m,         --monthly               export daily summary per user to monthly CSV
+     -m,         --monthly               export daily totals per user to monthly CSV
 
--f exports every individual time entry (raw data) to a single CSV
--m exports one row per day per user (daily totals across all clients/projects)
 
-ROUNDUP = 15  -> :00 :15 :30 :45; ROUNDUP = 30  -> :00 :30; ROUNDUP= 1  -> :00, 0 -> don't round up
-ALIGN = 15  -> :00 :15 :30 :45; ALIGN = 30  -> :00 :30; ALIGN= 1  -> :00, 0 -> don't round up
+ALIGN_TIME snaps both start and stop times to clean boundaries; duration is recalculated from the snapped times.
+ALIGN_TIME = 15 -> :00 :15 :30 :45; ALIGN_TIME = 30 -> :00 :30; ALIGN_TIME = 1 -> :00; 0 -> off
+
+ROUNDUP rounds the duration up to the next interval, extending stop time forward; start time is unchanged.
+ROUNDUP = 15 -> next 15-min interval; ROUNDUP = 30 -> next 30-min; ROUNDUP = 1 -> next minute; 0 -> off
+
+-f exports every individual time entry as a raw data dump; -m exports one row per day per user (daily totals across all clients/projects).
+
+Note: when both are set to the same value (e.g. ALIGN_TIME=15, ROUNDUP=15), ROUNDUP has no effect —
+alignment already guarantees the duration is a multiple of the interval.
 ```
 
 

@@ -4,7 +4,7 @@
 
 CLI tool to export Toggl time entries to CSV timesheets. Fetches time tracking data from the Toggl API and generates formatted CSV reports organized by client and project.
 
-**Tech Stack:** Python 2.7 (legacy, planning upgrade to Python 3)
+**Tech Stack:** Python 3
 **Dependencies:** requests, dataset, SQLAlchemy, python-dateutil
 
 ## Commands
@@ -14,34 +14,18 @@ CLI tool to export Toggl time entries to CSV timesheets. Fetches time tracking d
 - `python timesheet.py -s 2024-01-01 -e 2024-01-31` - Custom date range
 - `python timesheet.py -p` - Generate per-project CSVs
 - `python timesheet.py -f` - Export all entries to full.csv
-- `python timesheet.py -m` - Generate monthly summary CSV per user (daily totals)
+- `python timesheet.py -m` - Export daily totals per user to monthly CSV
 - `python timesheet.py -h` - Show help
 
-### Development Setup (using virtualenv - recommended)
+### Development Setup
 ```bash
 # Create and activate virtual environment
-python -m virtualenv venv
+python3 -m venv venv
 source venv/bin/activate  # Linux/Mac
 # venv\Scripts\activate   # Windows
 
 # Install dependencies
 pip install -r requirements.txt
-```
-
-### Container Usage (Podman/Docker)
-```bash
-# Build image
-podman build -t toggl-timesheet .
-
-# Run with convenience script (auto-detects podman/docker)
-./run-timesheet.sh -h
-./run-timesheet.sh -s 2024-01-01 -e 2024-01-31
-
-# Run manually with mounted config
-podman run --rm -v ./config.py:/app/config.py:ro -v ./data:/app/data toggl-timesheet -h
-
-# Run with environment variables
-podman run --rm -e TOGGL_API_TOKEN=xxx -e TOGGL_WORKSPACE_ID=yyy -v ./data:/app/data toggl-timesheet -h
 ```
 
 ### Quick Commands
@@ -51,7 +35,6 @@ podman run --rm -e TOGGL_API_TOKEN=xxx -e TOGGL_WORKSPACE_ID=yyy -v ./data:/app/
 
 ### Dangerous Commands (DO NOT run without explicit permission)
 - `python timesheet.py` - Calls Toggl API (uses API quota)
-- `./run-timesheet.sh` (without `-h`) - Calls Toggl API via container
 - Any modifications to `config.py` - Contains API credentials
 
 ## Architecture
@@ -72,7 +55,7 @@ podman run --rm -e TOGGL_API_TOKEN=xxx -e TOGGL_WORKSPACE_ID=yyy -v ./data:/app/
 │  │  togglapi/   │  │  toggltime/  │                             │
 │  │  api.py      │  │  toggltime.py│                             │
 │  │              │  │  timelib.py  │                             │
-│  │ - TogglAPI   │  │              │                             │
+│  │              │  │              │                             │
 │  │ - ReportAPI  │  │ - Toggletime │                             │
 │  └──────┬───────┘  │ - Time utils │                             │
 │         │          └──────┬───────┘                             │
@@ -90,7 +73,7 @@ podman run --rm -e TOGGL_API_TOKEN=xxx -e TOGGL_WORKSPACE_ID=yyy -v ./data:/app/
 ### Key Modules
 
 - **timesheet.py** - Main CLI, argument parsing, CSV generation
-- **togglapi/api.py** - `TogglAPI` (time entries), `ReportAPI` (detailed reports)
+- **togglapi/api.py** - `ReportAPI` (detailed reports via Toggl Reports API v2)
 - **toggltime/toggltime.py** - `Toggletime` class for time entry manipulation
 - **toggltime/timelib.py** - Date/time utility functions
 - **config.py** - User configuration (API token, workspace ID, timezone)
@@ -98,8 +81,7 @@ podman run --rm -e TOGGL_API_TOKEN=xxx -e TOGGL_WORKSPACE_ID=yyy -v ./data:/app/
 ## Conventions
 
 ### Code Style
-- Maintain Python 2.7 compatibility while preparing for Python 3 migration
-- Use `from __future__ import` for forward compatibility
+- Python 3 only — no Python 2 compatibility
 - Follow existing patterns in codebase
 
 ### Commit Messages
@@ -118,6 +100,5 @@ Use Conventional Commits format:
 
 ## Notes
 
-- The codebase uses Python 2.7 print statements and urllib
-- Migration to Python 3 is planned
-- Virtual environments: `venv-tt/` (old), `venv-tt-new/` (newer)
+- Virtual environment: `venv/` (activate with `source venv/bin/activate`)
+- `ALIGN_TIME` and `ROUNDUP` are independent settings with different effects — see `agent-docs/time-rounding.md` for full details. When set to the same value, `ROUNDUP` is a no-op. Current use case: `ALIGN_TIME=15`, `ROUNDUP=0`.

@@ -35,3 +35,15 @@ nosetests.xml
 .pydevproject
 
 data/*
+
+# Python cache
+__pycache__/
+pyrightconfig.json
+
+# IDE and local tooling
+.vscode/
+.claude/
+
+# Virtual environments
+venv/
+venv-py3/
